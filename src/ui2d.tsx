@@ -27,6 +27,7 @@ export class UI2D {
         resources["ui"] = {};
         resources["ui"]["bgmask"] = {};
         resources["ui"]["bgmask"].visible = "none";
+        
         resources["ui"]["inventory"] = {};
         resources["ui"]["inventory"].visible = "flex";
         resources["ui"]["inventory"]["items"] = [];

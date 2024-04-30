@@ -135,7 +135,8 @@ class Index {
             "denied",
             "success",
             "teleport",
-            "switch"
+            "switch",
+            "water"
         ];
 
         for ( let i = 0 ; i < soundfiles.length ; i++ ) {
@@ -263,7 +264,7 @@ class Index {
             camera_box_transform.position = Vector3.lerp( 
                 camera_box_transform.position,
                 target_position,
-                0.01
+                0.025
             );
             
      
@@ -299,21 +300,24 @@ class Index {
         if (inputSystem.isTriggered(InputAction.IA_ACTION_3, PointerEventType.PET_DOWN)){
             resources["stage"].restart_level();     
         }
+        if (inputSystem.isTriggered(InputAction.IA_ACTION_4, PointerEventType.PET_DOWN)){
+            resources["stage"].gameover();     
+        }
 
         if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(0);
+            resources["stage"].move_player(-1);
 
         }
         if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(1);
+            resources["stage"].move_player(-32);
                    
         }
         if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(2);
+            resources["stage"].move_player(1);
                    
         }
         if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(3);
+            resources["stage"].move_player(32);
                    
         }
         resources["index"].fix_player_position();
