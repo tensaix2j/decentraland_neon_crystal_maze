@@ -136,7 +136,8 @@ class Index {
             "success",
             "teleport",
             "switch",
-            "water"
+            "water",
+            "fire"
         ];
 
         for ( let i = 0 ; i < soundfiles.length ; i++ ) {

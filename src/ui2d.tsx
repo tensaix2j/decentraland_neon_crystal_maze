@@ -27,7 +27,7 @@ export class UI2D {
         resources["ui"] = {};
         resources["ui"]["bgmask"] = {};
         resources["ui"]["bgmask"].visible = "none";
-        
+
         resources["ui"]["inventory"] = {};
         resources["ui"]["inventory"].visible = "flex";
         resources["ui"]["inventory"]["items"] = [];
@@ -159,10 +159,10 @@ export class UI2D {
             <UI2D.UI_inventory_item id={1} frame_x={2} frame_y={29} top={4} left={4+128} />
             <UI2D.UI_inventory_item id={2} frame_x={3} frame_y={29} top={4} left={4+128*2} />
             <UI2D.UI_inventory_item id={3} frame_x={4} frame_y={29} top={4} left={4+128*3} />
-            <UI2D.UI_inventory_item id={4} frame_x={1} frame_y={29} top={4+128} left={4} />
-            <UI2D.UI_inventory_item id={5} frame_x={1} frame_y={29} top={4+128} left={4+128} />
-            <UI2D.UI_inventory_item id={6} frame_x={1} frame_y={29} top={4+128} left={4+128*2} />
-            <UI2D.UI_inventory_item id={7} frame_x={1} frame_y={29} top={4+128} left={4+128*3} />
+            <UI2D.UI_inventory_item id={4} frame_x={5} frame_y={29} top={4+128} left={4} />
+            <UI2D.UI_inventory_item id={5} frame_x={6} frame_y={29} top={4+128} left={4+128} />
+            <UI2D.UI_inventory_item id={6} frame_x={7} frame_y={29} top={4+128} left={4+128*2} />
+            <UI2D.UI_inventory_item id={7} frame_x={8} frame_y={29} top={4+128} left={4+128*3} />
             
         </UiEntity>
     }
