@@ -47,7 +47,7 @@ class Index {
         resources["index"]  = this;
         resources["ui2d"]    = new UI2D();
         resources["stage"]  = new Stage( {x: 32 , y: 1 ,z:32} );
-        
+        resources["button_states"] = {};        
         
         /*
         let citytile_entity = engine.addEntity()
@@ -137,7 +137,8 @@ class Index {
             "teleport",
             "switch",
             "water",
-            "fire"
+            "fire",
+            "explosion"
         ];
 
         for ( let i = 0 ; i < soundfiles.length ; i++ ) {
@@ -305,22 +306,63 @@ class Index {
             resources["stage"].gameover();     
         }
 
-        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(-1);
 
+       
+
+
+        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_UP)){
+            resources["button_states"][InputAction.IA_LEFT] = 0;
         }
+        if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_UP)){
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+        }
+        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_UP)){
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+        }
+        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_UP)){
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        }
+
+
+        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)){
+            //resources["stage"].move_player(-1);
+            resources["button_states"][InputAction.IA_LEFT] = 1;
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+            
+        }
+
         if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(-32);
-                   
+            //resources["stage"].move_player(-32);
+            resources["button_states"][InputAction.IA_FORWARD] = 1;
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+            
         }
         if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(1);
-                   
+            //resources["stage"].move_player(1);
+            resources["button_states"][InputAction.IA_RIGHT] = 1;
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+            
         }
         if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_DOWN)){
-            resources["stage"].move_player(32);
-                   
+            //resources["stage"].move_player(32);
+            resources["button_states"][InputAction.IA_BACKWARD] = 1;
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+
+            
         }
+
+
+        
+
+
         resources["index"].fix_player_position();
         resources["index"].fix_camerabox_position();
        
