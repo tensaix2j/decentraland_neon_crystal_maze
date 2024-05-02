@@ -103,17 +103,6 @@ class Index {
     }
 
 
-    //----------
-    DistanceSquared( v1, v2 ) {
-
-        let x_diff = v1.x - v2.x ;
-        let y_diff = v1.y - v2.y ;
-        let z_diff = v1.z - v2.z ;
-        return x_diff * x_diff + y_diff * y_diff + z_diff * z_diff;
-
-    }
-
-
     //-----------
     lookAt(entity, target) {
 
@@ -122,6 +111,8 @@ class Index {
         const normalizedDifference = Vector3.normalize(difference)
         transform.rotation.y = Quaternion.lookRotation( normalizedDifference ).y
         transform.rotation.w = Quaternion.lookRotation( normalizedDifference ).w
+
+        
     }
 
 
@@ -138,7 +129,12 @@ class Index {
             "switch",
             "water",
             "fire",
-            "explosion"
+            "explosion",
+            "scream",
+            "punch",
+            "hit",
+            "buttonclick",
+            "oof"
         ];
 
         for ( let i = 0 ; i < soundfiles.length ; i++ ) {
@@ -238,13 +234,20 @@ class Index {
     }
 
     //-----
+    // Make sure player stays in the box
     fix_player_position() {
 
         let camera_root_transform = Transform.getMutable( resources["index"].camerabox );
-        if ( resources["index"].DistanceSquared( Transform.get(engine.PlayerEntity).position , camera_root_transform.position ) > 2 ) {
+        if ( Vector3.distanceSquared( Transform.get(engine.PlayerEntity).position , camera_root_transform.position ) > 2 ) {
             console.log("fix_player_position");
             this.resetCameraPosition();
         } 
+
+        // Also donot allow player to view other direction
+        //if ( Transform.get(engine.CameraEntity).rotation.x < 0.4 ){
+            //this.resetCameraPosition();
+        //}
+        //console.log( CameraRot )
     }
     //------
     fix_camerabox_position() {
@@ -258,7 +261,7 @@ class Index {
             player_transform.position.z - 3,
         );
 
-        if ( resources["index"].DistanceSquared( 
+        if ( Vector3.distanceSquared( 
             camera_box_transform.position , 
             target_position ) > 2
         ) {
@@ -303,7 +306,7 @@ class Index {
             resources["stage"].restart_level();     
         }
         if (inputSystem.isTriggered(InputAction.IA_ACTION_4, PointerEventType.PET_DOWN)){
-            resources["stage"].gameover();     
+            console.log( Transform.get(engine.CameraEntity).rotation );
         }
 
 
