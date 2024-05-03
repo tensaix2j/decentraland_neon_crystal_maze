@@ -49,7 +49,7 @@ class Index {
         resources["stage"]  = new Stage( {x: 32 , y: 1 ,z:32} );
         resources["button_states"] = {};        
         
-        /*
+        
         let citytile_entity = engine.addEntity()
         Transform.create( citytile_entity, { 
             position: { 
@@ -58,16 +58,35 @@ class Index {
                 z: this.scene_parcels.z * 8 
             },
             scale: {
-                x: this.scene_parcels.x ,
+                x: this.scene_parcels.x * 16 ,
                 y: 1.0,
-                z: this.scene_parcels.z  
+                z: this.scene_parcels.z * 16 
             }
         })
-        
-        GltfContainer.create(citytile_entity, {
-            src: 'models/CityTile.glb',
+        MeshRenderer.setBox(citytile_entity);
+        Material.setBasicMaterial(citytile_entity, {
+            diffuseColor: Color4.fromInts(0,0,0,255),
         })
-        */
+        
+        
+        let skydome = engine.addEntity();
+        Transform.create( skydome, {
+            position: { 
+                x: this.scene_parcels.x * 8,
+                y: 0.0,
+                z: this.scene_parcels.z * 8
+            },
+            scale: {
+                x: this.scene_parcels.x *16,
+                y: this.scene_parcels.y *16,
+                z: this.scene_parcels.z *16 
+            }
+        })
+        GltfContainer.create(skydome, {
+            src: 'models/skydome.glb',
+        })
+
+
 
         this.init_async();
         this.createCameraBox();
@@ -134,7 +153,11 @@ class Index {
             "punch",
             "hit",
             "buttonclick",
-            "oof"
+            "oof",
+            "stone",
+            "crystal",
+            "victory",
+            "buttonshort"
         ];
 
         for ( let i = 0 ; i < soundfiles.length ; i++ ) {
@@ -244,9 +267,9 @@ class Index {
         } 
 
         // Also donot allow player to view other direction
-        //if ( Transform.get(engine.CameraEntity).rotation.x < 0.4 ){
-            //this.resetCameraPosition();
-        //}
+        if ( Transform.get(engine.CameraEntity).rotation.x < 0.3 ){
+            this.resetCameraPosition();
+        }
         //console.log( CameraRot )
     }
     //------

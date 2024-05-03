@@ -106,13 +106,13 @@ export class UI2D {
             uiBackground={{
                 textureMode: 'stretch',
                 texture: {
-                    src: 'images/tileset.png',
+                    src: 'images/tileset_64.png',
                 },
                 uvs:[
-                    props.frame_x / 32		    ,	 props.frame_y/ 32,
-                    props.frame_x / 32		    ,	(props.frame_y+1)/ 32,
-                    (props.frame_x + 1)/ 32     ,   (props.frame_y+1)/ 32,
-                    (props.frame_x + 1)/ 32     ,    props.frame_y/ 32,
+                    props.frame_x / 16		    ,	 props.frame_y/ 16,
+                    props.frame_x / 16		    ,	(props.frame_y+1)/ 16,
+                    (props.frame_x + 1)/ 16     ,   (props.frame_y+1)/ 16,
+                    (props.frame_x + 1)/ 16     ,    props.frame_y/ 16,
                 ]
             }}
         >
@@ -155,10 +155,10 @@ export class UI2D {
                 }
             }}
         >
-            <UI2D.UI_inventory_item id={0} frame_x={1} frame_y={29} top={4} left={4} />
-            <UI2D.UI_inventory_item id={1} frame_x={2} frame_y={29} top={4} left={4+128} />
-            <UI2D.UI_inventory_item id={2} frame_x={3} frame_y={29} top={4} left={4+128*2} />
-            <UI2D.UI_inventory_item id={3} frame_x={4} frame_y={29} top={4} left={4+128*3} />
+            <UI2D.UI_inventory_item id={0} frame_x={3} frame_y={15} top={4} left={4} />
+            <UI2D.UI_inventory_item id={1} frame_x={4} frame_y={15} top={4} left={4+128} />
+            <UI2D.UI_inventory_item id={2} frame_x={5} frame_y={15} top={4} left={4+128*2} />
+            <UI2D.UI_inventory_item id={3} frame_x={6} frame_y={15} top={4} left={4+128*3} />
             <UI2D.UI_inventory_item id={4} frame_x={5} frame_y={29} top={4+128} left={4} />
             <UI2D.UI_inventory_item id={5} frame_x={6} frame_y={29} top={4+128} left={4+128} />
             <UI2D.UI_inventory_item id={6} frame_x={7} frame_y={29} top={4+128} left={4+128*2} />
@@ -178,7 +178,7 @@ export class UI2D {
                 },   
             }}
             uiText={{ 
-                value: "Chips Remaining: " + resources["ui"]["gamestatus"].chip_remaining, 
+                value: "Crystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining, 
                 fontSize: 40 ,
                 textAlign: 'middle-center',
                 color: Color4.White()
