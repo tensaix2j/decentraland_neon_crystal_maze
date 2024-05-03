@@ -186,6 +186,7 @@ export class Stage {
 
 
     //--------
+    // CPCT
     check_player_current_tile(  prev_tilecoord ) {
         
         let tilecoord       = this.player_pos.z * 32 + this.player_pos.x ;
@@ -228,7 +229,7 @@ export class Stage {
 
         // 99: Bomb
         if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 99  ) {
-            resources["index"].play_sound("fire");
+            resources["index"].play_sound("explosion");
             this.gameover();
         }
 
@@ -259,7 +260,7 @@ export class Stage {
                 this.player_stats[6] = direction 
                 this.player_stats[7] = new_tilecoord;
                 this.player_stats[8] = 0.15;  //speed
-                this.player_stats[9] = null;
+                this.player_stats[10] = null;
 
                 
             }
@@ -318,7 +319,7 @@ export class Stage {
                 this.player_stats[6] = direction 
                 this.player_stats[7] = new_tilecoord;
                 this.player_stats[8] = 0.15;  //speed
-                this.player_stats[9] = null;
+                this.player_stats[10] = null;
                 
                 
             }
@@ -444,10 +445,57 @@ export class Stage {
             resources["index"].play_sound("victory");
 
         }
+
+        // 52 Trap
+        if ( tile_data_item == 52 ) {
+            this.player_stats[9] = 1;
+        }
+    }
+
+
+    //----
+    check_movable_block_current_tile( tilecoord , prev_tilecoord ) {
+
+        // Check movable block if dropped to water (37).
+        if ( this.movables[ tilecoord ] ) {
+
+            // 37: If movable block lands on water
+            if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 37  ) {
+                // Mark to delete this movable block upon animation completes
+                this.movables[ tilecoord ][5] = 2; 
+                // Mark to delete this water tile upon animation completes
+                this.removables[ tilecoord ][5] = 2;
+            }
+
+            // Movable block vs bomb
+            // 99: Bomb
+            if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 99  ) {
+                
+                resources["index"].play_sound("explosion");
+                
+                // Diffuse bomb
+                engine.removeEntity( this.removables[ tilecoord ][0] );
+                delete this.removables[ tilecoord ];
+
+                engine.removeEntity(  this.movables[ tilecoord ][0 ] );
+                delete this.movables[ tilecoord ];
+            }
+
+
+            // If movable block lands on force floor
+
+
+
+            // If movable block lands on ice then it will slide.
+            
+
+        }
+        
     }
 
 
     //--------
+    // CMCT
     check_monster_current_tile(  tilecoord ) {
         
         // 52 trap
@@ -598,6 +646,11 @@ export class Stage {
 
         let ret = true;
         
+        // player is trapped
+        if ( this.player_stats[9] == 1 ) {
+            return false;
+        }
+
         // Generic check
         if ( this.check_is_tile_passable_general( tilecoord , direction ) == false ) {
             ret = false;
@@ -702,30 +755,13 @@ export class Stage {
             delete this.movables[ tilecoord ];
             this.movables[ tilecoord + direction ] = [ tile, tiletype , 0 , srcPos, dstPos ] ;
 
-            this.check_movable_block( tilecoord + direction );
+            this.check_movable_block_current_tile( tilecoord + direction, tilecoord );
             resources["index"].play_sound("stone");
             
         }
     }
 
-    //----
-    check_movable_block( tilecoord ) {
-
-        // Check movable block if dropped to water (37).
-        if ( this.movables[ tilecoord ] ) {
-
-            if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 37  ) {
-                
-                // Mark to delete upon animation completes
-                this.movables[ tilecoord ][5] = 2; 
-                
-                // mark the water inactive
-                this.removables[ tilecoord ][5] = 2;
-                
-            }
-        }
-        
-    }
+    
 
     //-----
     get_y_rot_by_direction( direction ) {
@@ -883,7 +919,15 @@ export class Stage {
             src = 'models/brownbutton.glb';
         } else if ( tile_type == 84 ) {
             src = 'models/teleport.glb';
+        } else if ( tile_type == 52 ) {
+            src = 'models/trap.glb';
+        } else if ( tile_type == 129 ) {
+            src = 'models/thief.glb';
+        } else if ( tile_type == 99 ) {
+            src = 'models/bomb.glb';
         }
+        
+
 
 
         GltfContainer.create(tile, {
@@ -1324,8 +1368,7 @@ export class Stage {
         }
 
         //player
-        this.player_stats[2] = null ;
-        this.player_stats[9] = null ;
+        this.player_stats.length = 0;
         this.load_dynamic_objects( this.current_level_obj );
     }
 
@@ -1465,10 +1508,10 @@ export class Stage {
                         let static_textured_blocks          = [ 50,51,53];
                         let static_textured_blocks_index    = static_textured_blocks.indexOf( layers[ly].data[i] );
                         
-                        let static_glbs         = [ 48,49, 80, 81, 84];
+                        let static_glbs         = [ 48,49, 80, 81, 84, 52, 129];
                         let static_glbs_index   = static_glbs.indexOf( layers[ly].data[i] );
                             
-                        let static_items = [ 52, 8, 129 ]
+                        let static_items = [ 8 ]
                         let static_item_index = static_items.indexOf( layers[ly].data[i] );
 
                         
@@ -1497,7 +1540,7 @@ export class Stage {
                         } else if ( static_glbs_index > -1 ) {
 
 
-                            // buttons
+                            // glbs
                             this.create_glb_block( 
                                 (x_tile - 15 ) * this.tile_size,  //x
                                 0.5,                                //y
@@ -1579,25 +1622,19 @@ export class Stage {
                     // removable layer
                     if ( layers[ly].name == "removable" ) {
 
-                        // 38 fire
-                        // 99 bomb
-                        if ( [99].indexOf(  layers[ly].data[i] ) > -1  ) {
+                        // 99 bomb creation
+                        if ( layers[ly].data[i] == 99  ) {
 
                             if ( this.removables[ i ] == null ) {
                                 
-                                let frame_x = [  2 ][ [99].indexOf(layers[ly].data[i]) ];
-                                let frame_y = [ 28 ][ [99].indexOf(layers[ly].data[i]) ];
-                                
-                                let tile = this.create_item_plane( 
+                                let tile = this.create_glb_block( 
                                     (x_tile - 15 ) * this.tile_size,
-                                    0.55, 
-                                    (-z_tile + 15 ) * this.tile_size, 
-                                    frame_x,
-                                    frame_y,
-                                    1
-                                );
-                                
-
+                                    0.3, 
+                                    (-z_tile + 15 ) * this.tile_size,
+                                    layers[ly].data[i],
+                                    0.6,
+                                    0.6
+                                )
                                 this.removables[ i ] = [ tile, layers[ly].data[i] ];
                             }
 
@@ -2042,7 +2079,8 @@ export class Stage {
                 let end      = _this.player_stats[4];
                 let direction = _this.player_stats[6];
                 let speed     = _this.player_stats[8]; 
-
+                
+                
                 _this.player_stats[2] += speed;
                 
 
@@ -2068,9 +2106,9 @@ export class Stage {
                 }
 
 
-                if ( _this.player_stats[2] >= passed_tile_lerp_threshold && _this.player_stats[9] == null ) {
+                if ( _this.player_stats[2] >= passed_tile_lerp_threshold && _this.player_stats[10] == null ) {
 
-                    _this.player_stats[9] = 1;
+                    _this.player_stats[10] = 1;
                     _this.player_pos.x =   new_tilecoord % 32;
                     _this.player_pos.z = ( new_tilecoord / 32 ) >> 0;  
                     _this.pickup_items();
@@ -2084,7 +2122,7 @@ export class Stage {
 
                     _this.player_stats[2] = null;
                     _this.player_align_avatar_to_player_pos_tilecoord();
-                    _this.player_stats[9] = null;
+                    _this.player_stats[10] = null;
                    
                 }
             } 
@@ -2138,8 +2176,10 @@ export class Stage {
                     
                     Transform.getMutable( tile ).position = Vector3.lerp( start, end, progress );
                     
+                    // BOOKMARK UPDATE MOVABLE BLOCKS
 
                     if ( _this.movables[tilecoord][2] >= 0.99 ) {
+
                         _this.movables[tilecoord][2] = null ;
 
                         if ( _this.movables[tilecoord][5] == 1 || _this.movables[tilecoord][5] == 2 ) {
