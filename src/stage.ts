@@ -73,7 +73,7 @@ export class Stage {
         });
         this.root = root;
         this.create_player();
-        this.load_level( debug.layers );
+        this.load_level( level07.layers );
         engine.addSystem( this.update );
         
 
@@ -325,7 +325,7 @@ export class Stage {
             }
         }
 
-        // 48: Blue switch,
+        // 48: Blue button,
         if ( tile_data_item == 48 ) {
             
             resources["index"].play_sound("buttonshort");
@@ -449,6 +449,7 @@ export class Stage {
         // 52 Trap
         if ( tile_data_item == 52 ) {
             this.player_stats[9] = 1;
+            resources["index"].play_sound( "oof" );
         }
     }
 
@@ -533,7 +534,9 @@ export class Stage {
 
          // Red switch 
          if ( this.current_level_obj[ this.current_level_obj_index["item"] ].data[ tilecoord ]  == 80 ) {
-            resources["index"].play_sound("switch");
+            
+            resources["index"].play_sound("buttonshort");
+
             
             if ( this.src_and_target[ tilecoord ] ) {
                 let target_tilecoord         = this.src_and_target[ tilecoord ];
@@ -555,21 +558,16 @@ export class Stage {
             
         if ( this.monsters[ tilecoord ] == null ) {
             
-            console.log( type );
-
             let x_tile = tilecoord % 32;
             let z_tile = (tilecoord / 32 ) >> 0;
 
-            let frame_x = [ 4][  [101].indexOf(type) ] 
-            let frame_y = [28][  [101].indexOf(type) ] 
-
-            let tile = this.create_item_plane( 
+            let tile = this.create_glb_block( 
                 (x_tile - 15 ) * this.tile_size,
                 0.6, 
                 (-z_tile + 15 ) * this.tile_size, 
-                frame_x,
-                frame_y,
-                0.8
+                type,
+                1,
+                1
             );
             this.monsters[ tilecoord ] = [ tile, type ];
             this.monsters_next_move( tilecoord );
@@ -857,6 +855,7 @@ export class Stage {
 
 
     //----
+    // BOOKMARK glb_block
     create_glb_block(  x, y, z , tile_type, height, size ) {
 
         let tile = engine.addEntity();
@@ -925,11 +924,41 @@ export class Stage {
             src = 'models/thief.glb';
         } else if ( tile_type == 99 ) {
             src = 'models/bomb.glb';
-        }
+        } else if ( tile_type == 97 ) {
+            src = 'models/spider.glb';
+            Animator.create(tile, {
+                states: [
+                  {
+                    clip: 'walk',
+                    playing: true,
+                    loop: true
+                  }
+                ],
+            })
+            Animator.playSingleAnimation( tile , 'walk', false )
+        } else if ( tile_type == 98 ) {
+            src = 'models/tank.glb';
+        } else if ( tile_type == 100 ) {
+            src = 'models/glider.glb';
+        } else if ( tile_type == 101 ) {
+            src = 'models/fireball.glb';
         
+        } else if ( tile_type == 102 ) {
+            src = 'models/pinkball.glb';
+        
+        } else if ( tile_type == 70 ) {
+            src = 'models/boot_flipper.glb'
 
+        } else if ( tile_type == 71 ) {
+            src = 'models/boot_fire.glb'
+        } else if ( tile_type == 72 ) {
+            src = 'models/boot_suction.glb'
+        } else if ( tile_type == 73 ) {
+            src = 'models/boot_skates.glb'
+        
+        }
 
-
+        
         GltfContainer.create(tile, {
             src: src,
         })
@@ -1312,6 +1341,7 @@ export class Stage {
         resources["index"].play_sound( "scream" );
         resources["ui"]["bgmask"].visible = "flex";
         this.game_state = 2;
+        Animator.playSingleAnimation( this.player , 'idle', false )
 
     }
 
@@ -1629,7 +1659,7 @@ export class Stage {
                                 
                                 let tile = this.create_glb_block( 
                                     (x_tile - 15 ) * this.tile_size,
-                                    0.3, 
+                                    0.8, 
                                     (-z_tile + 15 ) * this.tile_size,
                                     layers[ly].data[i],
                                     0.6,
@@ -1639,7 +1669,7 @@ export class Stage {
                             }
 
                         
-                        // 37: water
+                        // 37: water creation
                         } else if ( layers[ly].data[i] == 37 ) {
 
                             if ( this.removables[ i ] == null ) {
@@ -1655,7 +1685,7 @@ export class Stage {
                                 this.removables[ i ] = [ tile, layers[ly].data[i] ];
                             }
 
-                        // 38: fire
+                        // 38: fire creation
                         } else if ( layers[ly].data[i] == 38 ) {
 
                             if ( this.removables[ i ] == null ) {
@@ -1672,8 +1702,8 @@ export class Stage {
                             }
 
 
-                        // 2,3,4,5 : lockpad wall  
-                        // 6 socket
+                        // 2,3,4,5 : lockpad wall creation  
+                        // 6 socket creation
                         } else if ( layers[ly].data[i] >= 2 && layers[ly].data[i] <= 6 ) {
                             
                             if ( this.removables[ i ] == null ) {
@@ -1706,7 +1736,7 @@ export class Stage {
                                 this.removables[ i ] = [ tile, layers[ly].data[i] ];
                             }
 
-                        // 7: movable brown wall
+                        // 7: movable brown wall creation
                         } else if ( layers[ly].data[i] == 7 ) {
 
                             if ( this.movables[ i ] == null ) {
@@ -1723,7 +1753,7 @@ export class Stage {
 
                             }
                         
-                        // 9,10 blue wall
+                        // 9,10 blue wall creation
                         } else if ( [9,10].indexOf( layers[ly].data[i] ) > -1  ) {
                             
                             if ( this.removables[ i ] == null ) {
@@ -1750,7 +1780,7 @@ export class Stage {
                     //  item layer
                     } else if ( layers[ly].name == "item" ) {
 
-                        // 35: Starting position
+                        // 35: Starting position creation
                         if ( layers[ly].data[i] == 35 ) {
                             
                             this.player_pos.x = x_tile ;
@@ -1760,10 +1790,10 @@ export class Stage {
 
 
 
-                        // 66,67,68,69: coloured keys 
-                        // 65 chip 
-                        // 70,71,72,73: boots
-                        } else if ( layers[ly].data[i] >= 65 && layers[ly].data[i] <= 73 ) {
+                        // 66,67,68,69: coloured keys creation 
+                        // 65 chip creation
+                        
+                        } else if ( layers[ly].data[i] >= 65 && layers[ly].data[i] <= 69 ) {
 
                             if ( this.pickables[ i ] == null ) {
 
@@ -1789,23 +1819,35 @@ export class Stage {
 
                                     size
                                 );
-
-                                
                                 Billboard.create( tile );
-                                
-                                    
                                 this.pickables[ i ] = [ tile, layers[ly].data[i] ];
-
-
+                                
                                 // Chip
                                 if ( layers[ly].data[i] == 65 ) {
                                     resources["ui"]["gamestatus"].chip_remaining += 1;
                                 }
                             }
 
+                        // 70,71,72,73: boots
+                        // boots creation
+                        } else if ( layers[ly].data[i] >= 70 &&  layers[ly].data[i] <= 73 ) {
 
+                            if ( this.pickables[ i ] == null ) {
 
-                        // 50,51 toggle door , dynamic part
+                                let tile = this.create_glb_block(
+                                    (x_tile - 15 ) * this.tile_size,
+                                    0.8, 
+                                    (-z_tile + 15 ) * this.tile_size, 
+
+                                    layers[ly].data[i],
+                                    0.5,
+                                    0.5,
+                                );
+
+                                this.pickables[ i ] = [ tile, layers[ly].data[i] ];
+                            }
+
+                        // 50,51 toggle door , dynamic part creation
                         } else if ( layers[ly].data[i] >= 50 &&  layers[ly].data[i] <= 51 ) {
                             
                             if ( this.togglables[ i ] == null ) {
@@ -1835,35 +1877,35 @@ export class Stage {
                     } else if ( layers[ly].name == "monster" ) {
                         
                         // Monsters
-                        // 97 bug
-                        // 98 tank
-                        // 100 glider
-                        // 101 fireball
-                        // 102 pink ball
+                        // 97 bug creation
+                        // 98 tank creation
+                        // 100 glider creation
+                        // 101 fireball creation
+                        // 102 pink ball creation
 
-                        if ( [ 97,98 ,100, 101, 102 ].indexOf( layers[ly].data[i] ) > -1  ) {
+                        let static_glbs = [ 97 , 98, 100, 101 , 102 ];
+                        let static_glbs_index = static_glbs.indexOf( layers[ly].data[i] ) 
+                        let sizes = [ 0.5, 0.9 , 0.9 , 1 , 0.7 ]
+                        let ys     = [ 0.6, 0.7, 1.2 , 0.6, 0.6 ]
 
-                            let frame_x = [  0,  1,  3,  4,  5  ][  [ 97, 98, 100, 101, 102 ].indexOf( layers[ly].data[i] ) ]
-                            let frame_y = [ 28, 28, 28, 28, 28  ][  [ 97, 98, 100, 101, 102 ].indexOf( layers[ly].data[i] ) ]
+                        if ( static_glbs_index > -1  ) {
+
+                            let size = sizes[ static_glbs_index ];
+                            let y    = ys[ static_glbs_index];
 
                             if ( this.monsters[ i ] == null ) {
-                                
-                                let tile = this.create_item_plane( 
+                                let tile = this.create_glb_block( 
                                     (x_tile - 15 ) * this.tile_size,
-                                    0.6, 
-                                    (-z_tile + 15 ) * this.tile_size, 
-                                    frame_x,
-                                    frame_y,
-                                    0.8
+                                    y, 
+                                    (-z_tile + 15 ) * this.tile_size,
+                                    layers[ly].data[i],
+                                    size,
+                                    size
                                 );
                                 this.monsters[i] = [ tile, layers[ly].data[i] ];
                                 this.monsters_next_move(i);
-
                             }
-
-                        }   
-                        
-
+                        } 
                     }
 
                 }
@@ -1922,7 +1964,7 @@ export class Stage {
                 let s_tile_x = tilecoord % 32;
                 let s_tile_z = (tilecoord / 32) >> 0;
                 let sx = ( s_tile_x - 15 ) * this.tile_size;
-                let sy = 0.6; 
+                let sy = Transform.getMutable( monster[0] ).position.y; 
                 let sz = (-s_tile_z + 15 ) * this.tile_size;
                 let e_tilecoord = tilecoord;
                 
@@ -2048,7 +2090,7 @@ export class Stage {
                 let e_tile_x = e_tilecoord % 32;
                 let e_tile_z = ( e_tilecoord / 32)  >> 0;
                 let ex = ( e_tile_x - 15 ) * this.tile_size;
-                let ey = 0.6; 
+                let ey = sy; 
                 let ez = (-e_tile_z + 15 ) * this.tile_size;
                 
                 monster[2] = 0;
@@ -2253,7 +2295,7 @@ export class Stage {
 
                         _this.monsters[tilecoord][2] += speed;
                         Transform.getMutable( tile ).position = Vector3.lerp( start, end, progress );
-                        Transform.getMutable( tile ).rotation = Quaternion.fromEulerDegrees( 90 , _this.get_y_rot_by_direction(direction) , 0 );
+                        Transform.getMutable( tile ).rotation = Quaternion.fromEulerDegrees( 0 , _this.get_y_rot_by_direction(direction) , 0 );
                         
                         if ( progress <= 0.5 ) {
                             // if slerp progress <50% the monster is counted as still at current tile.

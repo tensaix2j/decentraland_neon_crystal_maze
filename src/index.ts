@@ -268,7 +268,7 @@ class Index {
 
         // Also donot allow player to view other direction
         if ( Transform.get(engine.CameraEntity).rotation.x < 0.3 ){
-            this.resetCameraPosition();
+            //this.resetCameraPosition();
         }
         //console.log( CameraRot )
     }
