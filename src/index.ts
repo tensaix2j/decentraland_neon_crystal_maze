@@ -277,11 +277,12 @@ class Index {
         
         let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
         let player_transform = Transform.getMutable( resources["stage"].player );
+        let stage_root_transform  = Transform.getMutable( resources["stage"].root );
 
         let target_position = Vector3.create(   
-            player_transform.position.x ,
-            camera_box_transform.position.y ,
-            player_transform.position.z - 3,
+            player_transform.position.x     + stage_root_transform.position.x,
+            camera_box_transform.position.y  ,
+            player_transform.position.z - 3 + stage_root_transform.position.z ,
         );
 
         if ( Vector3.distanceSquared( 
@@ -329,7 +330,7 @@ class Index {
             resources["stage"].restart_level();     
         }
         if (inputSystem.isTriggered(InputAction.IA_ACTION_4, PointerEventType.PET_DOWN)){
-            console.log( Transform.get(engine.CameraEntity).rotation );
+            resources["stage"].debug();
         }
 
 

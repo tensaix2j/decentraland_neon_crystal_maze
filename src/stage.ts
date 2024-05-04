@@ -55,7 +55,8 @@ export class Stage {
     public togglables = {};
     public src_and_target = {};
     public teleports:any[] = [];
-
+    public explosions:any[] = [];
+    
     
     public current_level_obj_index = {};
     public game_state = 0;
@@ -73,7 +74,7 @@ export class Stage {
         });
         this.root = root;
         this.create_player();
-        this.load_level( level07.layers );
+        this.load_level( debug.layers );
         engine.addSystem( this.update );
         
 
@@ -205,9 +206,9 @@ export class Stage {
                 // Water trap
                 resources["index"].play_sound("water");
                 this.gameover();
-                Transform.getMutable(this.player).position.y = Transform.getMutable( this.root ).position.y + 0.8  - 1.0;
-                Transform.getMutable(this.player).position.x = (  this.player_pos.x - 15 ) * this.tile_size + Transform.getMutable( this.root ).position.x;
-                Transform.getMutable(this.player).position.z = ( -this.player_pos.z + 15 ) * this.tile_size + Transform.getMutable( this.root ).position.z;
+                Transform.getMutable(this.player).position.y = -0.2;
+                Transform.getMutable(this.player).position.x = (  this.player_pos.x - 15 ) * this.tile_size ;
+                Transform.getMutable(this.player).position.z = ( -this.player_pos.z + 15 ) * this.tile_size ;
                 
             }
         }
@@ -229,7 +230,9 @@ export class Stage {
 
         // 99: Bomb
         if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 99  ) {
-            resources["index"].play_sound("explosion");
+            
+            //resources["index"].play_sound("explosion");
+            this.create_explosions_on_tile( tilecoord );
             this.gameover();
         }
 
@@ -472,7 +475,8 @@ export class Stage {
             // 99: Bomb
             if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 99  ) {
                 
-                resources["index"].play_sound("explosion");
+                //resources["index"].play_sound("explosion");
+                this.create_explosions_on_tile( tilecoord );
                 
                 // Diffuse bomb
                 engine.removeEntity( this.removables[ tilecoord ][0] );
@@ -518,7 +522,8 @@ export class Stage {
             engine.removeEntity( monster );
             delete this.monsters[ tilecoord ];
 
-            resources["index"].play_sound("explosion");
+            //resources["index"].play_sound("explosion");
+            this.create_explosions_on_tile( tilecoord );
         }
 
 
@@ -815,9 +820,7 @@ export class Stage {
         let player = engine.addEntity();
         Transform.create( player, {
             
-            // Some unknown bug that it doesn't always follow the parent position.
-            //  might as well not use the parent.
-            //parent: this.root,
+            parent: this.root,
             
             position: Vector3.create(
                 Transform.getMutable( this.root ).position.x ,
@@ -1195,15 +1198,38 @@ export class Stage {
     }
 
 
+    //----------
+    debug() {
+
+        this.create_explosions(
+            Transform.getMutable( this.player ).position.x, 
+            Transform.getMutable( this.player ).position.y + 1, 
+            Transform.getMutable( this.player ).position.z, 
+            1.0             
+        );
+    }
 
 
     //------
-    create_item_plane( x, y, z , frame_x, frame_y, size ) {
+    create_explosions_on_tile( tilecoord ) {
+        
+        let x_tile = tilecoord % 32;
+        let z_tile = (tilecoord / 32) >> 0;
+        let x = ( x_tile - 15 ) * this.tile_size ;
+        let z = (-z_tile + 15) * this.tile_size ;
+        let y = 1;
+        this.create_explosions( x,y,z, 1 );
 
+    }
+
+    //--------
+    create_explosions( x,y,z , size ) {
+
+        
         let tile = engine.addEntity();
-        Transform.create( tile , {
+        Transform.create( tile, {
             parent: this.root,
-            position: { 
+            position: {
                 x: x,  
                 y: y, 
                 z: z
@@ -1212,35 +1238,50 @@ export class Stage {
                 x: size,  y: size, z: size
             }
         });
-        Transform.getMutable( tile ).rotation = Quaternion.fromEulerDegrees( 90, 0 , 0 );
+        
+        
+        let frame_x = 2;
+        let frame_y = 3;
+        let x_frames = 5;
+        let y_frames = 4;
+        
+        Material.setPbrMaterial( tile , {
+            texture: Material.Texture.Common({
+                src: 'images/explosion.png' ,
+            }),
+            emissiveTexture: Material.Texture.Common({
+                src: 'images/explosion.png' ,
+            }),
+            alphaTexture: Material.Texture.Common({
+                src: 'images/explosion.png' ,
+            }),
+            emissiveColor: Color3.fromInts(255,172,28),
+            emissiveIntensity: 20,            
+        })
         
         MeshRenderer.setPlane(tile, [
             
             // T
-            (frame_x )/32               , frame_y / 32,
-            (frame_x )/32               , (frame_y+1) / 32,
-            (frame_x + 1)/32            , (frame_y+1) / 32,
-            (frame_x + 1 )/32           , frame_y / 32,
+            (frame_x )/x_frames               , frame_y / y_frames,
+            (frame_x )/x_frames               , (frame_y+1) / y_frames,
+            (frame_x + 1)/x_frames            , (frame_y+1) / y_frames,
+            (frame_x + 1 )/x_frames           , frame_y / y_frames,
             
             // B
-            (frame_x )/32               , frame_y / 32,
-            (frame_x )/32               , (frame_y+1) / 32,
-            (frame_x + 1)/32            , (frame_y+1) / 32,
-            (frame_x + 1 )/32           , frame_y / 32,
+            (frame_x )/x_frames               , frame_y / y_frames,
+            (frame_x )/x_frames               , (frame_y+1) / y_frames,
+            (frame_x + 1)/x_frames            , (frame_y+1) / y_frames,
+            (frame_x + 1 )/x_frames           , frame_y / y_frames,
             
         ]);
-        
-        
 
-        Material.setBasicMaterial( tile , {
-            texture: Material.Texture.Common({
-                src: "images/tileset.png",
-            }),
-            
-        })
+        Billboard.create( tile );
+        resources["index"].play_sound("explosion");
+        
+        this.explosions.push( [ tile, 101, 0 ] );
         return tile
-    }
 
+    }
 
 
     //------
@@ -1314,9 +1355,9 @@ export class Stage {
     //---------
     player_align_avatar_to_player_pos_tilecoord() {
 
-        Transform.getMutable( this.player ).position.x = (  this.player_pos.x - 15 ) * this.tile_size + Transform.getMutable( this.root ).position.x ;
-        Transform.getMutable( this.player ).position.z = ( -this.player_pos.z + 15 ) * this.tile_size + Transform.getMutable( this.root ).position.z ;
-        Transform.getMutable( this.player ).position.y =  Transform.getMutable( this.root ).position.y + 0.5;
+        Transform.getMutable( this.player ).position.x = (  this.player_pos.x - 15 ) * this.tile_size  ;
+        Transform.getMutable( this.player ).position.z = ( -this.player_pos.z + 15 ) * this.tile_size  ;
+        Transform.getMutable( this.player ).position.y = 0.5;
 
     }
 
@@ -1325,9 +1366,9 @@ export class Stage {
 
         let tile_x = tilecoord % 32;
         let tile_z = ( tilecoord / 32 ) >> 0;
-        let x = (  tile_x - 15 ) * this.tile_size + Transform.getMutable( this.root ).position.x ;
-        let z = ( -tile_z + 15 ) * this.tile_size + Transform.getMutable( this.root ).position.z ;
-        let y = Transform.getMutable( this.root ).position.y + 0.5;
+        let x = (  tile_x - 15 ) * this.tile_size  ;
+        let z = ( -tile_z + 15 ) * this.tile_size  ;
+        let y =  0.5;
 
         return Vector3.create( x, y, z );
         
@@ -1520,33 +1561,38 @@ export class Stage {
                         }
                     } else if ( layers[ly].name == "item" ) {
 
-                        // Static part 
 
-                        // 48 : blue button,
-                        // 49 : green button,
-                        // 80 : red button
-                        // 81 : brown button
-                        // 84 ：teleport
+                        // GLBs:
+                        // 48 : blue button creation,
+                        // 49 : green button creation,
+                        // 80 : red button creation
+                        // 81 : brown button creation
+                        // 84 ：teleport creation
+                        // 52 : trap  creation
+                        // 129: thief creation
                         
-                        // 50,51: Toggle door
-                        // 53 : recessed wall.
 
-                        // 52 : trap
-                        //  8 : clone machine
-                        // 129: thief
+                        // Textured blocks:
+                        // 50,51: Toggle door creation
+                        // 53 : recessed wall creation.
+                        //  8 : clone machine  creation
+
                         
-                        let static_textured_blocks          = [ 50,51,53];
+                        let static_textured_blocks          = [ 50,51,53, 8];
                         let static_textured_blocks_index    = static_textured_blocks.indexOf( layers[ly].data[i] );
                         
                         let static_glbs         = [ 48,49, 80, 81, 84, 52, 129];
                         let static_glbs_index   = static_glbs.indexOf( layers[ly].data[i] );
                             
-                        let static_items = [ 8 ]
-                        let static_item_index = static_items.indexOf( layers[ly].data[i] );
 
                         
                         // 50,51,53 : The indicator 
                         if ( static_textured_blocks_index > -1 ) {
+
+                            let frame_x = 2;
+                            if ( layers[ly].data[i] == 8 ) {
+                                frame_x = 4;
+                            }
 
                             this.create_textured_block_emissive( 
 
@@ -1555,7 +1601,7 @@ export class Stage {
                                 (-z_tile + 15 ) * this.tile_size, //z
                                 
                                 'images/tileset_64.png',
-                                2,   //frame_x
+                                frame_x,   //frame_x
                                 14,   //frame_y
                                 16,   //x_frames
                                 16,   //y_frames
@@ -1585,24 +1631,6 @@ export class Stage {
                             if ( layers[ly].data[i] == 84 ) {
                                 this.teleports.push( i );
                             }
-                            
-
-                        } else if ( static_item_index > -1  ) {
-
-                            let frame_x = [ 19,  7,  0, 19  ][ static_item_index ] ;
-                            let frame_y = [ 30, 31, 27, 29  ][ static_item_index ] ;
-
-                            this.create_item_plane( 
-                                (x_tile - 15 ) * this.tile_size,
-                                0.52, 
-                                (-z_tile + 15 ) * this.tile_size, 
-                                frame_x,
-                                frame_y,
-                                1.0
-                            );
-                             
-                            
-                            
                         }
 
                     } 
@@ -2327,7 +2355,51 @@ export class Stage {
                 } 
                 
             }
-        } 
+        } // game state == 0
+
+        if ( _this.explosions.length > 0 ) {
+
+            for ( let i = _this.explosions.length - 1 ; i>= 0 ; i-- ) {
+            
+                let explosion = _this.explosions[i];
+                
+                let tile     = explosion[0]
+                let type     = explosion[1];
+                let progress = explosion[2];
+
+                if ( progress < 40 ) {
+
+                    explosion[2] += 1;
+
+                    let x_frames = 5;
+                    let y_frames = 4;
+                    let frame_x = progress % x_frames;
+                    let frame_y = 4 - ( (progress / x_frames ) >> 0 );
+                    
+                    MeshRenderer.setPlane(tile, [
+            
+                        // T
+                        (frame_x )/x_frames               , frame_y / y_frames,
+                        (frame_x )/x_frames               , (frame_y+1) / y_frames,
+                        (frame_x + 1)/x_frames            , (frame_y+1) / y_frames,
+                        (frame_x + 1 )/x_frames           , frame_y / y_frames,
+                        
+                        // B
+                        (frame_x )/x_frames               , frame_y / y_frames,
+                        (frame_x )/x_frames               , (frame_y+1) / y_frames,
+                        (frame_x + 1)/x_frames            , (frame_y+1) / y_frames,
+                        (frame_x + 1 )/x_frames           , frame_y / y_frames,
+                        
+                    ]);
+
+                } else {
+                    
+                    _this.explosions.splice( i , 1 );
+                    engine.removeEntity( tile );
+                    
+                }
+            }
+        }   
     }
 }
 
