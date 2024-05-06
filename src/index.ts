@@ -125,11 +125,12 @@ class Index {
     //-----------
     lookAt(entity, target) {
 
-        let transform = Transform.getMutable( entity );
-        const difference = Vector3.subtract(target, transform.position)
+        let src_transform       = Transform.getMutable( entity );
+        let target_transform    = Transform.getMutable( target )
+        const difference = Vector3.subtract(target_transform.position, src_transform.position)
         const normalizedDifference = Vector3.normalize(difference)
-        transform.rotation.y = Quaternion.lookRotation( normalizedDifference ).y
-        transform.rotation.w = Quaternion.lookRotation( normalizedDifference ).w
+        src_transform.rotation.y = Quaternion.lookRotation( normalizedDifference ).y
+        src_transform.rotation.w = Quaternion.lookRotation( normalizedDifference ).w
 
         
     }
@@ -272,6 +273,10 @@ class Index {
         }
         //console.log( CameraRot )
     }
+
+
+
+    
     //------
     fix_camerabox_position() {
         
@@ -300,6 +305,26 @@ class Index {
         }
 
     }
+
+    //-------------
+    fix_camerabox_position_instant() {
+        
+        let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
+        let player_transform = Transform.getMutable( resources["stage"].player );
+        let stage_root_transform  = Transform.getMutable( resources["stage"].root );
+
+        let target_position = Vector3.create(   
+            player_transform.position.x     + stage_root_transform.position.x,
+            camera_box_transform.position.y  ,
+            player_transform.position.z - 3 + stage_root_transform.position.z ,
+        );
+        
+        camera_box_transform.position.x = target_position.x; 
+        camera_box_transform.position.y = target_position.y; 
+        camera_box_transform.position.z = target_position.z; 
+        
+    }
+
     //------
     resetCameraPosition() {
         let camera_root_transform = Transform.getMutable( resources["index"].camerabox );
@@ -324,7 +349,7 @@ class Index {
     update( dt ) {
 
         if (inputSystem.isTriggered(InputAction.IA_PRIMARY, PointerEventType.PET_DOWN)){
-                   
+            resources["stage"].next_level();  
         }
         if (inputSystem.isTriggered(InputAction.IA_ACTION_3, PointerEventType.PET_DOWN)){
             resources["stage"].restart_level();     
@@ -332,9 +357,8 @@ class Index {
         if (inputSystem.isTriggered(InputAction.IA_ACTION_4, PointerEventType.PET_DOWN)){
             resources["stage"].debug();
         }
-
-
-       
+        
+        
 
 
         if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_UP)){
