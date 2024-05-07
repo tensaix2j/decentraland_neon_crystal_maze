@@ -31,6 +31,12 @@ export class UI2D {
         resources["ui"]["inventory"] = {};
         resources["ui"]["inventory"].visible = "flex";
         resources["ui"]["inventory"]["items"] = [];
+
+        resources["ui"]["hint"] = {};
+        resources["ui"]["hint"].visible = "none";
+        resources["ui"]["hint"].text = "";
+        
+
         for ( let i = 0 ; i < 8 ; i++ ) {
             resources["ui"]["inventory"]["items"][i] = {}
             resources["ui"]["inventory"]["items"][i].visible = "none";
@@ -187,8 +193,109 @@ export class UI2D {
         ></UiEntity>
     }
 
+    //------
+    static UI_instructions() {
+
+        return <UiEntity
+        
+            uiTransform={{
+                width: 374,
+                height: 400,
+                positionType: 'absolute',
+                position: {
+                    left: 16,
+                    top: 480
+                },   
+            }}
+            uiBackground={{
+                textureMode: 'nine-slices',
+                texture: {
+                    src: 'images/panel.png'
+                },
+                textureSlices: {
+                    top: 0.2,
+                    bottom: 0.2,
+                    left: 0.2,
+                    right: 0.2
+                },
+                color: Color4.fromInts( 0,0,0, 220)
+
+            }}
+        >
+            <UiEntity
+                uiTransform={{
+                    positionType: 'absolute',
+                    position: {
+                        left: 10,
+                        top: 10
+                    },   
+                }}
+                uiText={{ 
+                    value: "W,A,S,D to move.\n\
+(Face North for correct direction) \n\n\
+Collect all crystals to unlock crystal\ndoor.\n\
+Reach Exit Door to complete \nlevel.\n\n\
+New puzzle objects maybe\nintroduced on new levels, step on \nthe hint(Question Mark tile) \nto learn about them.\n\n\
+Press [1] to restart level\n\
+Press [2] to reset camera angle\n\
+\n\
+                    ", 
+                    fontSize: 20 ,
+                    textAlign: 'top-left',
+                    color: Color4.White()
+            
+                }}
+            ></UiEntity>
+        </UiEntity>
+    }
 
 
+     //----
+     static UI_hint() {
+
+        return <UiEntity
+            uiTransform={{
+                width: 1600,
+                height: 200,
+                positionType: 'absolute',
+                position: {
+                    bottom: 400
+                },   
+                display: resources["ui"]["hint" ].visible 
+            }}
+
+            uiBackground={{
+                textureMode: 'nine-slices',
+                texture: {
+                    src: 'images/panel2.png'
+                },
+                textureSlices: {
+                    top: 0.2,
+                    bottom: 0.2,
+                    left: 0.2,
+                    right: 0.2
+                },
+                color: Color4.fromInts(255,220,255,255)
+            }}
+        >
+            <UiEntity
+                uiTransform={{
+                    positionType: 'absolute',
+                    position: {
+                        left: 20,
+                        top: 20
+                    },   
+                }}
+                uiText={{ 
+                    value: resources["ui"]["hint"].text, 
+                    fontSize: 35 ,
+                    textAlign: 'top-left',
+                    color: Color4.White()
+            
+                }}
+            ></UiEntity>
+        </UiEntity>
+    }
 
 
     //------------
@@ -208,6 +315,8 @@ export class UI2D {
             <UI2D.UI_bgmask />
             <UI2D.UI_inventory />
             <UI2D.UI_gamestatus />
+            <UI2D.UI_instructions />
+            <UI2D.UI_hint />
             <UI2D.UI_notificationComponent />
 
         </UiEntity>

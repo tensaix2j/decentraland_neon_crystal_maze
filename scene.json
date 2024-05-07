@@ -2,8 +2,8 @@
 	"ecs7": true,
 	"runtimeVersion": "7",
 	"display": {
-		"title": "UI Test",
-		"description": "UI Test",
+		"title": "Neon Crystal Maze",
+		"description": "Neon Crystal Maze",
 		"navmapThumbnail": "images/scene-thumbnail.png",
 		"favicon": "favicon_asset"
 	},

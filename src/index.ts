@@ -351,11 +351,16 @@ class Index {
         if (inputSystem.isTriggered(InputAction.IA_PRIMARY, PointerEventType.PET_DOWN)){
             resources["stage"].next_level();  
         }
+
+        // 1
         if (inputSystem.isTriggered(InputAction.IA_ACTION_3, PointerEventType.PET_DOWN)){
             resources["stage"].restart_level();     
         }
+
+        // 2
         if (inputSystem.isTriggered(InputAction.IA_ACTION_4, PointerEventType.PET_DOWN)){
-            resources["stage"].debug();
+            resources["index"].fix_camerabox_position_instant();
+            resources["index"].resetCameraPosition();
         }
         
         
