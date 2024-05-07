@@ -345,6 +345,180 @@ class Index {
     }
 
 
+
+
+    //-----
+    normalizeQuaternion(q: Quaternion): Quaternion {
+        const norm = Math.sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+        return { w: q.w / norm, x: q.x / norm, y: q.y / norm, z: q.z / norm };
+    }
+    
+    getEulerYawFromQuaternion(q: Quaternion): number {
+        const normalizedQ = this.normalizeQuaternion(q);
+    
+        const sinYaw = 2 * (normalizedQ.w * normalizedQ.y - normalizedQ.x * normalizedQ.z);
+        const cosYaw = 1 - 2 * (normalizedQ.y * normalizedQ.y + normalizedQ.z * normalizedQ.z);
+        const yaw = Math.atan2(sinYaw, cosYaw);
+    
+        // Convert radians to degrees if needed
+        const toDegrees = (angle: number) => (angle * 180) / Math.PI;
+        return toDegrees(yaw);
+    }
+    
+
+
+
+
+
+
+    // Camera Yaw direction affects which is forward.
+    //--------
+    W_on_press() {
+
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+
+        resources["button_states"][InputAction.IA_FORWARD] = 0;
+        resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        resources["button_states"][InputAction.IA_LEFT] = 0;
+        resources["button_states"][InputAction.IA_RIGHT] = 0;
+        
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 1;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 1;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 1;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 1;
+
+        }
+
+    }
+    //--------
+    A_on_press() {
+
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+
+        resources["button_states"][InputAction.IA_FORWARD] = 0;
+        resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        resources["button_states"][InputAction.IA_LEFT] = 0;
+        resources["button_states"][InputAction.IA_RIGHT] = 0;
+        
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 1;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 1;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 1;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 1;
+
+        }
+    }
+   
+
+    //--------
+    S_on_press() {
+
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+
+        resources["button_states"][InputAction.IA_FORWARD] = 0;
+        resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        resources["button_states"][InputAction.IA_LEFT] = 0;
+        resources["button_states"][InputAction.IA_RIGHT] = 0;
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 1;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 1;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 1;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 1;
+
+        }
+
+    }
+    //--------
+    D_on_press() {
+        
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+
+        resources["button_states"][InputAction.IA_FORWARD] = 0;
+        resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        resources["button_states"][InputAction.IA_LEFT] = 0;
+        resources["button_states"][InputAction.IA_RIGHT] = 0;
+
+        if ( yaw >= -45 && yaw <= 45 ) {
+            
+            resources["button_states"][InputAction.IA_RIGHT] = 1;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 1;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 1;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 1;
+
+        }
+    }
+
+
+
+    //----------------
+    W_on_release() {
+
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+        }
+    }   
+    A_on_release() {
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+        }
+    }
+    S_on_release() {
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+        }
+    }
+    D_on_release() {
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+        if ( yaw >= -45 && yaw <= 45 ) {
+            resources["button_states"][InputAction.IA_RIGHT] = 0;
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            resources["button_states"][InputAction.IA_FORWARD] = 0;
+        } else if ( yaw < -135 || yaw > 135 ) {
+            resources["button_states"][InputAction.IA_LEFT] = 0;
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+            resources["button_states"][InputAction.IA_BACKWARD] = 0;
+        }
+    }
+
+
+    //----
+
+
+
     //----------
     update( dt ) {
 
@@ -362,58 +536,51 @@ class Index {
             resources["index"].fix_camerabox_position_instant();
             resources["index"].resetCameraPosition();
         }
+
+        // 3    
+        if (inputSystem.isTriggered(InputAction.IA_ACTION_5, PointerEventType.PET_DOWN)){
+            //resources["stage"].debug();
+
+            console.log( "yaw", resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) );
+
+        }
+
         
         
 
-
-        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_UP)){
-            resources["button_states"][InputAction.IA_LEFT] = 0;
-        }
-        if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_UP)){
-            resources["button_states"][InputAction.IA_FORWARD] = 0;
-        }
-        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_UP)){
-            resources["button_states"][InputAction.IA_RIGHT] = 0;
-        }
-        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_UP)){
-            resources["button_states"][InputAction.IA_BACKWARD] = 0;
-        }
-
-
-        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)){
-            //resources["stage"].move_player(-1);
-            resources["button_states"][InputAction.IA_LEFT] = 1;
-            resources["button_states"][InputAction.IA_RIGHT] = 0;
-            resources["button_states"][InputAction.IA_FORWARD] = 0;
-            resources["button_states"][InputAction.IA_BACKWARD] = 0;
-            
-        }
 
         if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_DOWN)){
-            //resources["stage"].move_player(-32);
-            resources["button_states"][InputAction.IA_FORWARD] = 1;
-            resources["button_states"][InputAction.IA_BACKWARD] = 0;
-            resources["button_states"][InputAction.IA_RIGHT] = 0;
-            resources["button_states"][InputAction.IA_LEFT] = 0;
-            
+            resources["index"].W_on_press();
         }
-        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_DOWN)){
-            //resources["stage"].move_player(1);
-            resources["button_states"][InputAction.IA_RIGHT] = 1;
-            resources["button_states"][InputAction.IA_LEFT] = 0;
-            resources["button_states"][InputAction.IA_FORWARD] = 0;
-            resources["button_states"][InputAction.IA_BACKWARD] = 0;
-            
+        
+        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)){
+            resources["index"].A_on_press();
         }
-        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_DOWN)){
-            //resources["stage"].move_player(32);
-            resources["button_states"][InputAction.IA_BACKWARD] = 1;
-            resources["button_states"][InputAction.IA_FORWARD] = 0;
-            resources["button_states"][InputAction.IA_RIGHT] = 0;
-            resources["button_states"][InputAction.IA_LEFT] = 0;
+        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_DOWN)){   
+            resources["index"].S_on_press();
+        }
 
+        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_DOWN)){
+            resources["index"].D_on_press();
             
         }
+        
+
+        if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_UP)){
+            resources["index"].W_on_release();
+        }
+        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_UP)){
+            resources["index"].A_on_release();
+        }
+        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_UP)){
+            resources["index"].S_on_release();
+        }
+
+        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_UP)){
+            resources["index"].D_on_release();
+        }
+        
+       
 
 
         

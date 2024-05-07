@@ -30,6 +30,10 @@ import level01 from "./levels/cclp1_01"
 import level02 from "./levels/cclp1_02"
 import level03 from "./levels/cclp1_03"
 import level04 from "./levels/cclp1_04"
+import level05 from "./levels/cclp1_05"
+import level06 from "./levels/cclp1_06"
+import level07 from "./levels/cclp1_07"
+
 import debug from "./levels/debug02"
 
 
@@ -53,8 +57,9 @@ export class Stage {
     public movables = {};
     public creatables = {};
     public monsters = {};
-
     public togglables = {};
+    
+    
     public src_and_target = {};
     public teleports:any[] = [];
     public explosions:any[] = [];
@@ -77,9 +82,19 @@ export class Stage {
         level02,
         level03,
         level04,
+        level05,
+        level06,
+        level07,        
     ]
     public level_index = 0;
  
+
+
+
+
+
+
+
     //-----------------
     constructor( aPos )  {
 
@@ -99,7 +114,7 @@ export class Stage {
 
 
     //--------
-    open_lock_if_bump_into_one( tilecoord ) {
+    open_lock_if_bump_into_one( tilecoord:number ) {
         
         if ( this.removables[ tilecoord ] != null ) {
             
@@ -200,9 +215,8 @@ export class Stage {
     
 
     //---
-    get_new_tilecoord_on_ice(  sTilecoord, direction, tile_data_bg , func_tile_passable ) {
+    get_new_tilecoord_on_ice(  tilecoord:number , direction:number, tile_data_bg:number , func_tile_passable ) {
         
-        let tilecoord = parseInt( sTilecoord );
         let new_tilecoord = tilecoord;  
 
         if ( tile_data_bg == 43 ) {
@@ -281,7 +295,7 @@ export class Stage {
 
     //--------
     // CPCT
-    check_player_current_tile(  prev_tilecoord ) {
+    check_player_current_tile(  prev_tilecoord:number ) {
         
         let tilecoord       = this.player_pos.z * 32 + this.player_pos.x ;
         let tile_data_bg    = this.current_level_obj[ this.current_level_obj_index["bg"] ].data[ tilecoord ];
@@ -479,11 +493,14 @@ export class Stage {
 
         }
 
-        // 52 Trap
+        // 52 Trap on entered
         if ( tile_data_item == 52 ) {
-            this.player_stats[9] = 1;
-            resources["index"].play_sound( "oof" );
-        }
+
+            if ( this.is_trap_active( tilecoord ) == true ) {
+                this.player_stats[9] = 1;
+                resources["index"].play_sound( "oof" );
+            }
+        }   
 
         // 36 Hint 
         if ( this.hints[ tilecoord ] ) {
@@ -499,7 +516,7 @@ export class Stage {
 
 
     //-----
-    text_adjust( txt , wrapwidth ) {
+    text_adjust( txt:string , wrapwidth:number ) {
         
         let marks:any[] = [];
         let cnt = 0;
@@ -521,12 +538,36 @@ export class Stage {
 
     }
 
+    //-------
+    is_trap_active( tilecoord:number ) {
+
+        for ( let key in this.src_and_target ) {
+
+            let src_tilecoord = parseInt( key );
+            if ( this.src_and_target[ src_tilecoord ] == tilecoord ) {
+                
+                // Movable block is still pressing.. so the trap is in deactivated state.
+                if ( this.movables[ src_tilecoord ] ) {
+                    return false;
+                }
+                // Player is pressing
+                if ( this.player_pos.z * 32 + this.player_pos.x == src_tilecoord ) {
+                    return false;
+                }
+
+                // Monster is pressing 
+                if ( this.monsters[ src_tilecoord ] ) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     //----
     // CBCT
-    check_movable_block_current_tile( sTilecoord , prev_tilecoord ) {
+    check_movable_block_current_tile( tilecoord:number , prev_tilecoord:number ) {
 
-        
-        let tilecoord       = parseInt( sTilecoord );
 
         if ( this.movables[ tilecoord ] ) {
 
@@ -636,9 +677,8 @@ export class Stage {
 
     //--------
     // CMCT
-    check_monster_current_tile(  sTilecoord ) {
+    check_monster_current_tile(  tilecoord:number ) {
         
-        let tilecoord       = parseInt( sTilecoord );
 
         if ( this.monsters[ tilecoord ] ) {
 
@@ -646,8 +686,7 @@ export class Stage {
 
             // 52 trap
             if ( tile_data_item == 52 ) {
-                if ( this.monsters[ tilecoord ] ) {
-
+                if ( this.is_trap_active( tilecoord ) == true ) {
                     this.monsters[ tilecoord ][9] = 1;
                 }
             }
@@ -689,7 +728,7 @@ export class Stage {
 
     //----------------------
     // Can be called by player, monster or movable block
-    tile_button_on_pressed( tilecoord , tile_data_item ) {
+    tile_button_on_pressed( tilecoord:number , tile_data_item:number ) {
 
         console.log("tile_button_on_pressed", tilecoord );
 
@@ -726,14 +765,17 @@ export class Stage {
             
             for ( let tilecoord in this.togglables ) {
 
-                this.togglables[ tilecoord ][2] = 1 - this.togglables[ tilecoord ][2];
-                let tile = this.togglables[ tilecoord ][0] ;
-                if ( this.togglables[ tilecoord ][2] == 0 ) {
-                    Transform.getMutable(tile).position.y = -2;
-                } else {
-                    Transform.getMutable(tile).position.y = 1;
+                // Make sure it is 50-51: togglable walls
+                if ( this.togglables[ tilecoord ][1] >= 50 && this.togglables[ tilecoord ][1] <= 51 ) {
+
+                    this.togglables[ tilecoord ][2] = 1 - this.togglables[ tilecoord ][2];
+                    let tile = this.togglables[ tilecoord ][0] ;
+                    if ( this.togglables[ tilecoord ][2] == 0 ) {
+                        Transform.getMutable(tile).position.y = -2;
+                    } else {
+                        Transform.getMutable(tile).position.y = 1;
+                    }
                 }
-                
             }
         }
 
@@ -746,7 +788,9 @@ export class Stage {
 
                 // Release trap which has monster
                 if ( target_tile_data_item == 52 && this.monsters[ target_tilecoord ] && this.monsters[ target_tilecoord][9] == 1 ) {
+                    
                     this.monsters[ target_tilecoord][9] = null;
+                    this.monsters_next_move( target_tilecoord );
                 }
 
                 if ( target_tile_data_item == 52 && this.player_stats[9] == 1 ) {
@@ -755,11 +799,12 @@ export class Stage {
             }
                 
         }
+        
     }
 
 
     //------
-    clone_monster( tilecoord , type, direction ) {
+    clone_monster( tilecoord:number , type:number, direction:number ) {
 
         
         if ( this.check_is_tile_passable_for_monster( tilecoord + direction, type , direction ) == true  ) {
@@ -773,7 +818,7 @@ export class Stage {
     }
 
     //--------
-    create_dirt( tilecoord , type ) {
+    create_dirt( tilecoord:number , type:number ) {
 
         if ( this.creatables[ tilecoord ] == null ) {
 
@@ -802,7 +847,7 @@ export class Stage {
 
 
     //---------
-    create_monster( tilecoord, type , direction ) {
+    create_monster( tilecoord:number, type:number , direction:number ) {
 
         let static_glbs = [ 97 , 98, 100, 101 , 102,  103, 104, 105, 106 ];
         let static_glbs_index = static_glbs.indexOf( type ) 
@@ -825,9 +870,13 @@ export class Stage {
                     size
                 );
                     
+                if ( direction != null ) {
+                    Transform.getMutable( tile ).rotation = Quaternion.fromEulerDegrees( 0 , this.get_y_rot_by_direction(direction), 0 );
+                }
                 
                 //                                        progrss start end  isdead  
                 this.monsters[ tilecoord ] = [ tile, type, null, null, null, null, direction ];
+                this.check_monster_current_tile(  tilecoord );
                 this.monsters_next_move( tilecoord ); 
             
             }
@@ -839,7 +888,7 @@ export class Stage {
 
     //-------------
     // GENERAL PASSABLE 
-    check_is_tile_passable_general( tilecoord , direction ) {
+    check_is_tile_passable_general( tilecoord:number , direction:number ) {
 
         let ret = true; 
         // standard wall (1) 
@@ -857,7 +906,9 @@ export class Stage {
 
         // togglable wall
         } else if ( this.togglables[ tilecoord  ] && 
+            this.togglables[ tilecoord ][1] >= 50 && this.togglables[ tilecoord ][1] <= 51 &&
             this.togglables[ tilecoord ][2] == 1  )  {
+
            ret = false;
         
 
@@ -1003,7 +1054,7 @@ export class Stage {
 
     //-------
     // CHECK PLAYER PASSABLE
-    check_is_tile_passable( tilecoord , direction ) {
+    check_is_tile_passable( tilecoord:number , direction:number ) {
 
         let ret = true;
         
@@ -1021,7 +1072,7 @@ export class Stage {
         // Movable blocks (7), if there's a movable block, check if pushable or not.
         } else if ( this.movables[ tilecoord ] ) {
             
-            if ( this.check_is_tile_passable_for_movable_block( parseInt(tilecoord) + direction , direction  ) == true ) {
+            if ( this.check_is_tile_passable_for_movable_block( tilecoord + direction , direction  ) == true ) {
                
             } else {
                 // Cannot push into
@@ -1037,7 +1088,7 @@ export class Stage {
 
     //----
     // CHECK BLOCK PASSABLE
-    check_is_tile_passable_for_movable_block( tilecoord ,  direction ) {
+    check_is_tile_passable_for_movable_block( tilecoord:number ,  direction:number ) {
 
         let ret = true;
         
@@ -1059,7 +1110,7 @@ export class Stage {
 
     //-------
     // CHECK MONSTER PASSABLE
-    check_is_tile_passable_for_monster( tilecoord , monster_type , direction ) {
+    check_is_tile_passable_for_monster( tilecoord:number , monster_type:number , direction:number ) {
 
         let ret = true;
         
@@ -1111,7 +1162,7 @@ export class Stage {
 
     //----
     // PMB
-    push_movable_block(  direction ) {
+    push_movable_block(  direction:number ) {
         
         let tilecoord       =  this.player_pos.z * 32 + this.player_pos.x ;
         let tile_data_bg    = this.current_level_obj[ this.current_level_obj_index["bg"] ].data[ tilecoord ];
@@ -1150,7 +1201,8 @@ export class Stage {
     
 
     //-----
-    get_y_rot_by_direction( direction ) {
+    get_y_rot_by_direction( direction:number ) {
+        
         if ( direction == -1 ) {
             return -90;
         } else if ( direction == -32 ) {
@@ -1160,10 +1212,11 @@ export class Stage {
         } else if ( direction == 32 ) {
             return 180
         }
+        return 0;
     }
 
     //--------
-    move_player(  direction ) {
+    move_player(  direction:number ) {
 
         if ( this.game_state != 0 ) {
             return;
@@ -1640,12 +1693,13 @@ export class Stage {
     //----------
     debug() {
 
-       this.gameover( "Game Paused");
+       console.log( "monsters", this.monsters );
+       console.log( "src_and_target", this.src_and_target );
     }
 
 
     //------
-    create_explosions_on_tile( tilecoord ) {
+    create_explosions_on_tile( tilecoord:number ) {
         
         let x_tile = tilecoord % 32;
         let z_tile = (tilecoord / 32) >> 0;
@@ -2574,11 +2628,8 @@ export class Stage {
                                );
 
                                 this.togglables[i] = [ tile, layers[ly].data[i] , status ];
-
-
                             }    
 
-                        
                         }
 
 
@@ -2636,9 +2687,8 @@ export class Stage {
 
 
     //-------------------
-    monsters_next_move( sTilecoord ) {
+    monsters_next_move( tilecoord:number ) {
 
-        let tilecoord = parseInt( sTilecoord );
 
         if ( this.monsters[ tilecoord ] ) {
 
@@ -2969,18 +3019,19 @@ export class Stage {
             } 
 
                 let has_down = 0;
-                if ( resources["button_states"][InputAction.IA_LEFT] == 1 ) {
+
+                // Forward always takes precedence
+                if (resources["button_states"][InputAction.IA_FORWARD] == 1 ) { 
+                    Transform.getMutable( _this.player ).rotation = Quaternion.fromEulerDegrees( 0 , 0, 0 );
+                    _this.move_player(-32);
+                    has_down = 1;
+
+                } else if ( resources["button_states"][InputAction.IA_LEFT] == 1 ) {
 
                     Transform.getMutable( _this.player ).rotation = Quaternion.fromEulerDegrees( 0 , -90, 0 );
                     _this.move_player(-1);
                     has_down = 1;
                         
-
-                } else if (resources["button_states"][InputAction.IA_FORWARD] == 1 ) { 
-                    Transform.getMutable( _this.player ).rotation = Quaternion.fromEulerDegrees( 0 , 0, 0 );
-                    _this.move_player(-32);
-                    has_down = 1;
-                    
                 } else if ( resources["button_states"][InputAction.IA_RIGHT] == 1) {
                     Transform.getMutable( _this.player ).rotation = Quaternion.fromEulerDegrees( 0 , 90, 0 );
                     _this.move_player(1);
@@ -3005,7 +3056,9 @@ export class Stage {
 
 
             // movable blocks
-            for ( let tilecoord in _this.movables ) {
+            for ( let key in _this.movables ) {
+                
+                let tilecoord = parseInt(key);
                 
                 if ( _this.movables[tilecoord][2] != null ) {
                     
@@ -3043,8 +3096,9 @@ export class Stage {
             }
 
             // Monster
-            for ( let tilecoord in _this.monsters ) {
+            for ( let key in _this.monsters ) {
 
+                let tilecoord = parseInt(key);
                 let tile            = _this.monsters[tilecoord][0];
                 let type            = _this.monsters[tilecoord][1];
                 let progress        = _this.monsters[tilecoord][2];    
