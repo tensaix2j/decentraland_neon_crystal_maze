@@ -26,19 +26,11 @@ import {
 
 
 import resources from "./resources"
-import level01 from "./levels/level01"
-import level02 from "./levels/level02"
-import level03 from "./levels/level03"
-import level04 from "./levels/level04"
-import level05 from "./levels/level05"
-import level06 from "./levels/level06"
-import level07 from "./levels/level07"
-import level08 from "./levels/level08"
-import level09 from "./levels/level09"
-import level10 from "./levels/level10"
-import level11 from "./levels/level11"
-
-import debug from "./levels/debug09"
+import level01 from "./levels/cclp1_01"
+import level02 from "./levels/cclp1_02"
+import level03 from "./levels/cclp1_03"
+import level04 from "./levels/cclp1_04"
+import debug from "./levels/debug02"
 
 
 //-------------------
@@ -85,16 +77,9 @@ export class Stage {
         level02,
         level03,
         level04,
-        level05,
-        level06,
-        level07,
-        level08,
-        level09,
-        level10,
-        level11,
     ]
-    public level_index = 9;
-
+    public level_index = 0;
+ 
     //-----------------
     constructor( aPos )  {
 
@@ -231,12 +216,12 @@ export class Stage {
             
             if ( direction == -1 ) {
                 new_tilecoord = tilecoord + 32;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, 32 ) == false  ) {
                     new_tilecoord = tilecoord + 1;
                 }
             } else if ( direction == -32 ) {
                 new_tilecoord = tilecoord + 1;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, 1 ) == false  ) {
                     new_tilecoord = tilecoord + 32;
                 }
             }
@@ -247,12 +232,12 @@ export class Stage {
             
             if ( direction == 1 ) {
                 new_tilecoord = tilecoord + 32;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, 32 ) == false  ) {
                     new_tilecoord = tilecoord - 1;
                 }
             } else if ( direction == -32 ) {
                 new_tilecoord = tilecoord - 1;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, -1 ) == false  ) {
                     new_tilecoord = tilecoord + 32;
                 }
             }
@@ -260,12 +245,14 @@ export class Stage {
             
             if ( direction == -1 ) {
                 new_tilecoord = tilecoord - 32;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, -32 ) == false  ) {
                     new_tilecoord = tilecoord + 1;
                 }
             } else if ( direction == 32 ) {
+
                 new_tilecoord = tilecoord + 1;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, 1 ) == false  ) {
+
                     new_tilecoord = tilecoord - 32;
                 }
             }
@@ -274,12 +261,12 @@ export class Stage {
             
             if ( direction == 1 ) {
                 new_tilecoord = tilecoord - 32;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, -32 ) == false  ) {
                     new_tilecoord = tilecoord - 1;
                 }
             } else if ( direction == 32 ) {
                 new_tilecoord = tilecoord - 1;
-                if ( func_tile_passable( new_tilecoord, direction ) == false  ) {
+                if ( func_tile_passable( new_tilecoord, -1 ) == false  ) {
                     new_tilecoord = tilecoord - 32;
                 }
             }
@@ -394,10 +381,12 @@ export class Stage {
 
             } else {       
 
+                
                 let direction = tilecoord - prev_tilecoord;
                 let new_tilecoord = this.get_new_tilecoord_on_ice(  tilecoord, direction, tile_data_bg , this.check_is_tile_passable.bind(this) );
                 let new_direction = new_tilecoord - tilecoord;
 
+                
                 this.player_stats[2] = 0;
                 this.player_stats[3] = this.tilecoord_to_position( tilecoord );
                 this.player_stats[4] = this.tilecoord_to_position( new_tilecoord );
@@ -835,8 +824,7 @@ export class Stage {
                     size,
                     size
                 );
-                console.log( "create_glb_block" , tilecoord );
-
+                    
                 
                 //                                        progrss start end  isdead  
                 this.monsters[ tilecoord ] = [ tile, type, null, null, null, null, direction ];
@@ -908,13 +896,16 @@ export class Stage {
             }
 
 
-        // From ice corner to other tile also need to consider
+        // From ice corner to other tile also need to consider.
+        // So we check from other tile's perspective
         } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction  ] == 44 ) {
             if ( direction == -1 || direction == -32 ) {
+
                 ret = false;
             }
         } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction  ] == 45 ) {
             if ( direction ==  1 || direction == -32 ) {
+
                 ret = false;
             }
         } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction ] == 46 ) {
@@ -923,6 +914,7 @@ export class Stage {
             }
         } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction ] == 47 ) {
             if ( direction == 1 || direction == 32 ) {
+
                 ret = false;
             }
 
@@ -1022,6 +1014,7 @@ export class Stage {
 
         // Generic check
         if ( this.check_is_tile_passable_general( tilecoord , direction ) == false ) {
+
             ret = false;
         
         
@@ -1399,11 +1392,7 @@ export class Stage {
         
         }
 
-        if ( src == 'models/block_bright_edge.glb' ) {
-            console.log(  "AAA", tile_type );
-
-        }
-
+        
         
         GltfContainer.create(tile, {
             src: src,
@@ -2318,17 +2307,41 @@ export class Stage {
         
         for ( let ly = 0 ; ly < layers.length ; ly++ ) {
 
-            if ( ["fg", "item","removable","monster"].indexOf( layers[ly].name ) > -1 ) {
+            if ( ["fg", "bg", "item","removable","monster"].indexOf( layers[ly].name ) > -1 ) {
 
                 for ( let i = 0 ; i < layers[ly].data.length ; i++ ) {
 
                     let x_tile = i % 32;
                     let z_tile =  (i / 32) >> 0 ;
                     
+                    // bg layer
+                    if ( layers[ly].name == "bg" ) {
+
+                        // 37: water creation (This can be on bg or removable layer)
+                        if ( layers[ly].data[i] == 37 ) {
+
+                            if ( this.removables[ i ] == null ) {
+                                
+                                let tile = this.create_glb_block( 
+                                    (x_tile - 15 ) * this.tile_size,
+                                    -0.3, 
+                                    (-z_tile + 15 ) * this.tile_size,
+                                    layers[ly].data[i],
+                                    1,
+                                    1
+                                )
+                                this.removables[ i ] = [ tile, layers[ly].data[i] ];
+                            }
+
+
+                        // 11 :Dirt creation (This can be on bg or removable layer)
+                        } else if ( layers[ly].data[i] == 11 ) {
+                            this.create_dirt( i , layers[ly].data[i] );
+                        }
 
                     //-------------------------------
                     // removable layer
-                    if ( layers[ly].name == "removable" ) {
+                    } if ( layers[ly].name == "removable" ) {
 
                         // 99 bomb creation
                         if ( layers[ly].data[i] == 99  ) {
@@ -2347,7 +2360,7 @@ export class Stage {
                             }
 
                         
-                        // 37: water creation
+                        // 37: water creation (This can be bg or removable both acceptable)
                         } else if ( layers[ly].data[i] == 37 ) {
 
                             if ( this.removables[ i ] == null ) {
