@@ -33,6 +33,9 @@ import level04 from "./levels/cclp1_04"
 import level05 from "./levels/cclp1_05"
 import level06 from "./levels/cclp1_06"
 import level07 from "./levels/cclp1_07"
+import level08 from "./levels/cclp1_08"
+import level09 from "./levels/cclp1_09"
+import level10 from "./levels/cclp1_10"
 
 import debug from "./levels/debug02"
 
@@ -84,9 +87,12 @@ export class Stage {
         level04,
         level05,
         level06,
-        level07,        
+        level07,
+        level08,
+        level09,
+        level10,        
     ]
-    public level_index = 0;
+    public level_index = 8;
  
 
 
@@ -1115,6 +1121,7 @@ export class Stage {
         let ret = true;
         
         let tile_data_bg    = this.current_level_obj[ this.current_level_obj_index["bg"] ].data[ tilecoord ];
+        let tile_data_item  = this.current_level_obj[ this.current_level_obj_index["item"] ].data[ tilecoord ];
 
         if ( this.check_is_tile_passable_general( tilecoord, direction ) == false ) {
 
@@ -1138,7 +1145,11 @@ export class Stage {
 
             ret = false;
 
+        // recessed wall
+        } else if ( tile_data_item == 53 ) {
 
+            ret = false
+        
         // Movable blocks (7), 
         } else if ( this.movables[ tilecoord ] ) {
             ret = false;
@@ -2230,7 +2241,7 @@ export class Stage {
                         // Textured blocks:
                         // 50,51: Toggle door creation
                         // 53 : recessed wall creation.
-                        //  8 : clone machine  creation
+                        //  8 : clone machine creation
 
                         
                         let static_textured_blocks          = [ 50,51,53, 8];
