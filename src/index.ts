@@ -276,7 +276,49 @@ class Index {
 
 
 
-    
+    //----
+    fix_camerabox_position2() {
+
+        
+        let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
+        let player_transform = Transform.getMutable( resources["stage"].player );
+        let stage_root_transform  = Transform.getMutable( resources["stage"].root );
+
+
+        let yaw_rad = resources["index"].getEulerYawFromQuaternion2( Transform.get(engine.CameraEntity).rotation ) ;
+        let distance = 4;
+        let x_offset = distance * Math.sin( yaw_rad );
+        let z_offset = distance * Math.cos( yaw_rad ); 
+
+
+        let target_position = Vector3.create(   
+            player_transform.position.x     + stage_root_transform.position.x - x_offset,
+            camera_box_transform.position.y  ,
+            player_transform.position.z     + stage_root_transform.position.z - z_offset ,
+        );
+        
+       
+        // immediate
+        //camera_box_transform.position.x = target_position.x; 
+        //camera_box_transform.position.y = target_position.y; 
+        //camera_box_transform.position.z  = target_position.z; 
+
+        // slowly
+        if ( Vector3.distanceSquared( 
+            camera_box_transform.position , 
+            target_position ) > 2
+        ) {
+            
+            camera_box_transform.position = Vector3.lerp( 
+                camera_box_transform.position,
+                target_position,
+                0.03
+            );
+            
+     
+        }
+        
+    }
     //------
     fix_camerabox_position() {
         
@@ -303,7 +345,6 @@ class Index {
             
      
         }
-
     }
 
     //-------------
@@ -316,7 +357,7 @@ class Index {
         let target_position = Vector3.create(   
             player_transform.position.x     + stage_root_transform.position.x,
             camera_box_transform.position.y  ,
-            player_transform.position.z - 3 + stage_root_transform.position.z ,
+            player_transform.position.z     + stage_root_transform.position.z - 4,
         );
         
         camera_box_transform.position.x = target_position.x; 
@@ -324,6 +365,8 @@ class Index {
         camera_box_transform.position.z = target_position.z; 
         
     }
+
+    
 
     //------
     resetCameraPosition() {
@@ -346,13 +389,20 @@ class Index {
 
 
 
-
+    
     //-----
     normalizeQuaternion(q: Quaternion): Quaternion {
         const norm = Math.sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
         return { w: q.w / norm, x: q.x / norm, y: q.y / norm, z: q.z / norm };
     }
     
+    //--------
+    toDegrees( rad ) {
+        return rad * 180 / Math.PI;
+    }
+
+
+    //----------
     getEulerYawFromQuaternion(q: Quaternion): number {
         const normalizedQ = this.normalizeQuaternion(q);
     
@@ -361,9 +411,20 @@ class Index {
         const yaw = Math.atan2(sinYaw, cosYaw);
     
         // Convert radians to degrees if needed
-        const toDegrees = (angle: number) => (angle * 180) / Math.PI;
-        return toDegrees(yaw);
+        return this.toDegrees(yaw);
     }
+
+    getEulerYawFromQuaternion2(q: Quaternion): number {
+        const normalizedQ = this.normalizeQuaternion(q);
+    
+        const sinYaw = 2 * (normalizedQ.w * normalizedQ.y - normalizedQ.x * normalizedQ.z);
+        const cosYaw = 1 - 2 * (normalizedQ.y * normalizedQ.y + normalizedQ.z * normalizedQ.z);
+        const yaw = Math.atan2(sinYaw, cosYaw);
+    
+        // Convert radians to degrees if needed
+        return yaw;
+    }
+
     
 
 
@@ -587,7 +648,7 @@ class Index {
 
 
         resources["index"].fix_player_position();
-        resources["index"].fix_camerabox_position();
+        resources["index"].fix_camerabox_position2();
        
     }
     
