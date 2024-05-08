@@ -54,6 +54,9 @@
 	],
 	"featureToggles": {},
     "worldConfiguration": {
-		"name": "tensaix2j.dcl.eth"
+		"name": "tensaix2j.dcl.eth",
+        "placesConfig": {
+			"optOut": true
+		}
 	}
 }

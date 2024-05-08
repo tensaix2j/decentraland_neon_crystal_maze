@@ -51,6 +51,7 @@ export class UI2D {
 
         resources["ui"]["gamestatus"] = {};
         resources["ui"]["gamestatus"].chip_remaining = 0;
+        
 
         ReactEcsRenderer.setUiRenderer( this.UI_JSX );
         engine.addSystem( this.update );
@@ -176,21 +177,50 @@ export class UI2D {
 
     //----
     static UI_gamestatus() {
+
         return <UiEntity
+        
             uiTransform={{
+                width: 900,
+                height: 140,
                 positionType: 'absolute',
                 position: {
-                    bottom: 40,
+                    bottom: -20
                 },   
+                justifyContent: 'center'
             }}
-            uiText={{ 
-                value: "Crystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining, 
-                fontSize: 40 ,
-                textAlign: 'middle-center',
-                color: Color4.White()
-        
+            uiBackground={{
+                textureMode: 'nine-slices',
+                texture: {
+                    src: 'images/panel.png'
+                },
+                textureSlices: {
+                    top: 0.2,
+                    bottom: 0.2,
+                    left: 0.2,
+                    right: 0.2
+                },
+                color: Color4.fromInts( 0,0,0, 253)
+
             }}
-        ></UiEntity>
+        >
+            <UiEntity
+                uiTransform={{
+                    positionType: 'relative',
+                    position: {
+                       top:0
+                    }
+                }}
+                uiText={{ 
+                    value: "Level: " + (resources["stage"].level_index + 1) + " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining, 
+                    fontSize: 40 ,
+                    color: Color4.White()
+            
+                }}
+            ></UiEntity>
+
+        </UiEntity>
+
     }
 
     //------
@@ -206,6 +236,7 @@ export class UI2D {
                     left: 16,
                     top: 480
                 },   
+                justifyContent: 'center'
             }}
             uiBackground={{
                 textureMode: 'nine-slices',

@@ -123,7 +123,7 @@ export class Stage {
         cc1_11,      // maze with 3 lanes
 
     ]
-    
+
     public level_index = 0;
  
 
