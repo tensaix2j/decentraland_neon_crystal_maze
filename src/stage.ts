@@ -26,16 +26,29 @@ import {
 
 
 import resources from "./resources"
-import level01 from "./levels/cclp1_01"
-import level02 from "./levels/cclp1_02"
-import level03 from "./levels/cclp1_03"
-import level04 from "./levels/cclp1_04"
-import level05 from "./levels/cclp1_05"
-import level06 from "./levels/cclp1_06"
-import level07 from "./levels/cclp1_07"
-import level08 from "./levels/cclp1_08"
-import level09 from "./levels/cclp1_09"
-import level10 from "./levels/cclp1_10"
+
+import tutorial from "./levels/tutorial"
+
+
+import cclp1_02 from "./levels/cclp1_02"
+import cclp1_03 from "./levels/cclp1_03"
+import cclp1_04 from "./levels/cclp1_04"
+import cclp1_05 from "./levels/cclp1_05"
+import cclp1_06 from "./levels/cclp1_06"
+import cclp1_07 from "./levels/cclp1_07"
+import cclp1_08 from "./levels/cclp1_08"
+import cclp1_09 from "./levels/cclp1_09"
+import cclp1_10 from "./levels/cclp1_10"
+
+import cc1_02 from "./levels/cc1_02"
+import cc1_03 from "./levels/cc1_03"
+import cc1_04 from "./levels/cc1_04"
+import cc1_05 from "./levels/cc1_05"
+import cc1_07 from "./levels/cc1_07"
+import cc1_08 from "./levels/cc1_08"
+import cc1_09 from "./levels/cc1_09"
+import cc1_10 from "./levels/cc1_10"
+import cc1_11 from "./levels/cc1_11"
 
 import debug from "./levels/debug02"
 
@@ -81,18 +94,37 @@ export class Stage {
 
 
     public levels = [ 
-        level01,
-        level02,
-        level03,
-        level04,
-        level05,
-        level06,
-        level07,
-        level08,
-        level09,
-        level10,        
+
+        tutorial,   // intro to keys,water,ice,fire,force
+        cc1_02,     // intro to block
+        cclp1_04,   // block practice
+        
+        cc1_03,     // intro to boots
+        cclp1_02,   // boots practice
+        cclp1_03,   // boots practice
+
+        cc1_04,     // intro to blue,green switches
+        cclp1_08,   // blue,green switches practice
+        
+        cc1_05,     // intro to red, yellow switches
+        cclp1_07,   // red, yellow switches practice 
+        
+        cclp1_05,    // intro to hidden walls
+
+        cc1_08,     //  intro to dirt,gravel
+        cclp1_06,   //  bugs, gravel, dirt practce
+
+        cc1_07,      // intro to theif and teleport
+        cclp1_09,    // theif and teleport practice
+
+        cclp1_10,    // graduation 
+        cc1_09,      // everyone in one
+        cc1_10,      // maze with fire
+        cc1_11,      // maze with 3 lanes
+
     ]
-    public level_index = 8;
+    
+    public level_index = 0;
  
 
 

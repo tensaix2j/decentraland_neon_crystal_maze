@@ -231,16 +231,18 @@ export class UI2D {
                     },   
                 }}
                 uiText={{ 
-                    value: "W,A,S,D to move.\n\
-(Face North for correct direction) \n\n\
-Collect all crystals to unlock crystal\ndoor.\n\
-Reach Exit Door to complete \nlevel.\n\n\
-New puzzle objects maybe\nintroduced on new levels, step on \nthe hint(Question Mark tile) \nto learn about them.\n\n\
+                    value: "\
+Instructions:\n\
+W,A,S,D to move.\n\
+1. Collect all crystals\n\
+2. Reach Exit to complete level.\n\
+3. Read hints to learn about\ndifferent puzzle elements\non different levels\n\
+\n\
 Press [1] to restart level\n\
 Press [2] to reset camera angle\n\
 \n\
                     ", 
-                    fontSize: 20 ,
+                    fontSize: 22 ,
                     textAlign: 'top-left',
                     color: Color4.White()
             
