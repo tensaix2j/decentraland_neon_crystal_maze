@@ -27,9 +27,10 @@ import {
 
 import resources from "./resources"
 
+import { SokobanGenerator } from "./sokoban_generator";
+
+// Static levels
 import tutorial from "./levels/tutorial"
-
-
 import cclp1_02 from "./levels/cclp1_02"
 import cclp1_03 from "./levels/cclp1_03"
 import cclp1_04 from "./levels/cclp1_04"
@@ -39,7 +40,6 @@ import cclp1_07 from "./levels/cclp1_07"
 import cclp1_08 from "./levels/cclp1_08"
 import cclp1_09 from "./levels/cclp1_09"
 import cclp1_10 from "./levels/cclp1_10"
-
 import cc1_02 from "./levels/cc1_02"
 import cc1_03 from "./levels/cc1_03"
 import cc1_04 from "./levels/cc1_04"
@@ -49,9 +49,15 @@ import cc1_08 from "./levels/cc1_08"
 import cc1_09 from "./levels/cc1_09"
 import cc1_10 from "./levels/cc1_10"
 import cc1_11 from "./levels/cc1_11"
+import sokoban_01 from "./levels/sokoban_01";
+import lobby from "./levels/lobby";
 
 import debug from "./levels/debug02"
 
+interface Layer {
+    data: any[];
+    name: string;
+}
 
 //-------------------
 export class Stage {
@@ -74,13 +80,16 @@ export class Stage {
     public creatables = {};
     public monsters = {};
     public togglables = {};
+    public sokoban_holes = {};
     
-    
+
     public src_and_target = {};
     public teleports:any[] = [];
     public explosions:any[] = [];
     public directions = {};
     public hints = {};
+    public exits = {};
+
     
     
     public current_level_obj_index = {};
@@ -95,25 +104,25 @@ export class Stage {
 
     public levels = [ 
 
+        lobby,      // lobby
+
         tutorial,   // intro to keys,water,ice,fire,force
         cc1_02,     // intro to block
         cclp1_04,   // block practice
+        sokoban_01, // basic sokoban level
         
         cc1_03,     // intro to boots
         cclp1_02,   // boots practice
         cclp1_03,   // boots practice
-
         cc1_04,     // intro to blue,green switches
-        cclp1_08,   // blue,green switches practice
         
+        cclp1_08,   // blue,green switches practice
         cc1_05,     // intro to red, yellow switches
         cclp1_07,   // red, yellow switches practice 
-        
         cclp1_05,    // intro to hidden walls
 
         cc1_08,     //  intro to dirt,gravel
         cclp1_06,   //  bugs, gravel, dirt practce
-
         cc1_07,      // intro to theif and teleport
         cclp1_09,    // theif and teleport practice
 
@@ -185,7 +194,7 @@ export class Stage {
                     resources["index"].play_sound("denied");
                 }
 
-            // 6 socket bumped
+            // 6 crystal wall bumped
             } else if ( item_id == 6 ) {
                 if ( resources["ui"]["gamestatus"].chip_remaining <= 0 ) {
 
@@ -195,9 +204,30 @@ export class Stage {
                     
                 } else {
                     resources["index"].play_sound("denied");
-                }
+                } 
             
+            // 21 sokoban wall bumped
+            } else if ( item_id == 21 ) {
+                
+                // For sokoban wall, we check all holes are they plugged.
+                let all_holes_plugged = 1;
+                for ( let hole_tilecoord in this.sokoban_holes ) {
+                    if ( this.movables[ hole_tilecoord ] && this.movables[ hole_tilecoord ][1] == 7 ) {
+                    } else {
+                        
+                        all_holes_plugged = 0;
+                        break;
+                    }
+                }
 
+                if ( all_holes_plugged == 1 ) {
+                    resources["index"].play_sound("success");
+                    engine.removeEntity( tile );
+                    delete this.removables[ tilecoord ];
+                    
+                } else {
+                    resources["index"].play_sound("denied");
+                }
 
             // 9 - 10: hidden wall bumped
             } else if ( item_id == 9 ) {
@@ -453,8 +483,8 @@ export class Stage {
 
         
 
-        // 48,49,80,81 Tile buttons
-        if ( [48,49,80,81].indexOf( tile_data_item ) > -1 ) {
+        // 48,49,80,81,82 Tile buttons
+        if ( [48,49,80,81,82].indexOf( tile_data_item ) > -1 ) {
             this.tile_button_on_pressed( tilecoord , tile_data_item ) ;
         }
 
@@ -704,8 +734,8 @@ export class Stage {
                 
             }
 
-             // 48,49,80,81 Tile buttons
-             if ( [48,49,80,81].indexOf( tile_data_item) > -1 ) {
+             // 48,49,80,81,82 Tile buttons
+             if ( [48,49,80,81,82].indexOf( tile_data_item) > -1 ) {
                 this.tile_button_on_pressed( tilecoord , tile_data_item );
             }
         }
@@ -757,7 +787,7 @@ export class Stage {
             }
 
             // 48,49,80,81 Tile buttons
-            if ( [48,49,80,81].indexOf( tile_data_item) > -1 ) {
+            if ( [48,49,80,81,82].indexOf( tile_data_item) > -1 ) {
                 this.tile_button_on_pressed( tilecoord , tile_data_item );
             }
             
@@ -836,6 +866,11 @@ export class Stage {
                 }
             }
                 
+        }
+
+        //82 Grey button
+        if ( tile_data_item == 82 ) {
+            
         }
         
     }
@@ -935,12 +970,15 @@ export class Stage {
         
 
             
-        // lockpad (2-5) and socket(6)
+        // lockpad (2-5) and crystal door(6)
         } else if ( this.removables[ tilecoord  ] && 
              this.removables[ tilecoord ][1] >= 2 && this.removables[ tilecoord ][1] <= 6  )  {
             ret = false;
             
-        
+        // sokoban door
+        } else if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 21 ) {
+            
+            ret = false;
 
         // togglable wall
         } else if ( this.togglables[ tilecoord  ] && 
@@ -1394,8 +1432,14 @@ export class Stage {
             src = 'models/greenbutton.glb';
         } else if ( tile_type == 80 ) {
             src = 'models/redbutton.glb';
+        
         } else if ( tile_type == 81 ) {
-            src = 'models/brownbutton.glb';
+            src = 'models/yellowbutton.glb';
+        
+        } else if ( tile_type == 82 ) {
+            src = 'models/greybutton.glb';
+
+
         } else if ( tile_type == 84 ) {
             src = 'models/teleport.glb';
         } else if ( tile_type == 52 ) {
@@ -1736,8 +1780,12 @@ export class Stage {
     //----------
     debug() {
 
-       console.log( "monsters", this.monsters );
-       console.log( "src_and_target", this.src_and_target );
+       //console.log( "monsters", this.monsters );
+       //console.log( "src_and_target", this.src_and_target );
+        //console.log( "sokoban_holes", this.sokoban_holes );
+        //console.log( "movables" , this.movables );
+        //console.log( "exits", this.exits );
+        
     }
 
 
@@ -1910,16 +1958,44 @@ export class Stage {
         
     }
 
-    
+    //----
+    back_to_lobby() {
+
+        this.clear_dynamic_objects();
+        this.clear_static_objects();
+        this.clear_inventory();
+        this.level_index = 0;
+        this.load_level( this.levels[ this.level_index ].layers );
+        resources["ui"]["notification"].text = ""
+        this.game_state = 0;
+    }
+
     //-----
+    // E on pressed
     next_level() {
+
         if ( this.game_state == 3 ) {
 
             this.clear_static_objects();
-            this.level_index = ( this.level_index + 1 ) % this.levels.length;
-
             this.clear_inventory();
-            this.load_level( this.levels[ this.level_index ].layers );
+            
+            if ( this.player_stats[11] == null ) {
+                this.level_index = this.level_index + 1 ;
+            } else {
+
+                // Custom level
+                this.level_index = this.player_stats[11];
+                this.player_stats[11] = null;
+            }
+
+            // Static levels
+            if ( this.level_index < this.levels.length ) {
+                this.load_level( this.levels[ this.level_index ].layers );
+            
+            // Procedural generated levels
+            } else {
+                this.load_level( this.generate_sokoban() );
+            }
 
             resources["ui"]["notification"].text = ""
             this.game_state = 0;
@@ -1928,15 +2004,94 @@ export class Stage {
     }
 
 
+    
+    //----------
+    generate_sokoban() {
+
+        let layers:Layer[] = [
+            {
+                "data":[],
+                "name":"bg"
+            },
+            {
+                "data":[],
+                "name":"fg"
+            },
+            {
+                "data":[],
+                "name":"removable"
+            },
+            {
+                "data":[],
+                "name":"item"
+            },
+        ]
+        
+        let sokoban 
+        for ( let i = 0 ; i < 5 ; i++ ) {
+            sokoban = new SokobanGenerator(12,12,6 );
+            if ( sokoban.trash == false ) {
+                break;
+            }
+        }
+
+        for ( let i = 0 ; i < sokoban.nodes.length ; i++ ) {
+
+            for ( let j = 0 ; j < sokoban.nodes[i].length ; j++ ) {
+                
+                let tile_x = j + 15;
+                let tile_z = i + 15;
+ 
+                if ( sokoban.boxMap[j+","+i] ) {
+                    layers[2].data[ tile_z * 32 + tile_x ] = 7;
+                }
+                if (  sokoban.buttonMap[j+","+i] ) {
+                    layers[3].data[ tile_z * 32 + tile_x ] = 82;
+                }
+                if ( sokoban.nodes[j][i].wall == true ) {
+
+                    if ( sokoban.doorMap[j+","+i] == 1 ) {
+                        layers[2].data[ tile_z * 32 + tile_x ] = 21;  
+                        layers[0].data[ (tile_z - 1) * 32 + tile_x ] = 34;  
+                        
+
+                    } else if ( sokoban.doorMap[j+","+i] == 2 ) {
+                        layers[2].data[ tile_z * 32 + tile_x ] = 21;
+                        layers[0].data[ (tile_z + 1) * 32 + (tile_x  ) ] = 34;    
+                        
+                    } else if ( sokoban.doorMap[j+","+i] == 3 ) {
+                        layers[2].data[ tile_z * 32 + tile_x ] = 21; 
+                        layers[0].data[ (tile_z ) * 32 + (tile_x - 1 ) ] = 34;     
+                        
+                    } else if ( sokoban.doorMap[j+","+i] == 4 ) {
+                        layers[2].data[ tile_z * 32 + tile_x ] = 21; 
+                        layers[0].data[ (tile_z) * 32 + (tile_x + 1 ) ] = 34;     
+                        
+                    } else if ( sokoban.surrounded(j,i) == false  ) {
+                        layers[1].data[ tile_z * 32 + tile_x ] = 1;  
+                    } 
+                } else {
+                    layers[0].data[ tile_z * 32 + tile_x ] = 33;  
+                }
+
+                if ( sokoban.playerX == j && sokoban.playerY == i ) {
+                    layers[3].data[ tile_z * 32 + tile_x ] = 35;
+                }
+            }
+
+        }
+        return layers;
+    }
+
+
+
+
+
     //-----
-    victory( v_tilecoord ) {
+    victory( v_tilecoord:number ) {
 
-        resources["index"].play_sound("victory");
-        this.clear_dynamic_objects();
-
-        let v_tile_x = v_tilecoord % 32;
-        let v_tile_z = (v_tilecoord / 32) >> 0;
-
+        
+        
         for ( let i = this.static_tiles.length - 1 ; i >= 0 ; i-- ) {
             
             let tilecoord = this.static_tiles[i][3] ;
@@ -1948,7 +2103,16 @@ export class Stage {
             } 
         }
 
-        resources["ui"]["notification"].text = "Congratulations. Press (E) to proceed to next level"
+        if ( this.exits[ v_tilecoord ] ) {
+            resources["index"].play_sound("teleport");
+            resources["ui"]["notification"].text = "Press (E) to proceed."
+            this.player_stats[11] = this.exits[ v_tilecoord ];
+        } else {
+            resources["index"].play_sound("victory");
+            resources["ui"]["notification"].text = "Congratulations. Press (E) to proceed to next level"
+        }
+
+        this.clear_dynamic_objects();
         this.game_state = 3;
 
     }
@@ -2021,6 +2185,13 @@ export class Stage {
         for ( let tilecoord in this.hints ) {
             delete this.hints[ tilecoord ] ;
         }
+        for ( let tilecoord in this.sokoban_holes ) {
+            delete this.sokoban_holes[ tilecoord ];
+        }
+        for ( let tilecoord in this.exits ) {
+            delete this.exits[ tilecoord ];
+        }
+
         this.teleports.length = 0;
 
     }
@@ -2039,6 +2210,10 @@ export class Stage {
 
     //---
     restart_level() {
+
+        if ( this.game_state == 3 ) {
+            return ;
+        }
 
         this.game_state = 0;    
         resources["ui"]["bgmask"].visible = "none";
@@ -2100,6 +2275,7 @@ export class Stage {
     // this loads only the static.
     load_level( layers ) {
 
+        
         resources["ui"]["gamestatus"].chip_remaining = 0;
         this.current_level_obj = layers;
         
@@ -2266,7 +2442,10 @@ export class Stage {
                         // 48 : blue button creation,
                         // 49 : green button creation,
                         // 80 : red button creation
-                        // 81 : brown button creation
+                        // 81 : yellow button creation
+                        // 82 : grey button creation
+
+
                         // 84 ：teleport creation
                         // 52 : trap  creation
                         // 129: thief creation
@@ -2279,10 +2458,13 @@ export class Stage {
                         let static_textured_blocks          = [ 50,51,53, 8];
                         let static_textured_blocks_index    = static_textured_blocks.indexOf( layers[ly].data[i] );
                         
-                        let static_glbs         = [ 48,49, 80, 81, 84, 52, 129];
+                        let static_glbs         = [ 48,49, 80, 81, 84, 52, 129, 82];
                         let static_glbs_index   = static_glbs.indexOf( layers[ly].data[i] );
                             
 
+                        if ( layers[ly].data[i] == 82 ) {
+                            this.sokoban_holes[ i ] = 1;
+                        }
                         
                         // 50,51,53 : The indicator 
                         if ( static_textured_blocks_index > -1 ) {
@@ -2343,7 +2525,8 @@ export class Stage {
                 
                 for ( let i = 0 ; i < layers[ly].objects.length ; i++ ) {
                     let obj = layers[ly].objects[i];
-                    if ( ["switch", "direction","hint"].indexOf( obj.type ) > -1  ) {
+                    if ( ["switch", "direction","hint", "exit"].indexOf( obj.type ) > -1  ) {
+                        
                         let properties = {};
                         for ( let j = 0 ; j < obj.properties.length ; j++ ) {
                             properties[ obj.properties[j].name ] = obj.properties[j].value;
@@ -2384,6 +2567,8 @@ export class Stage {
                             this.static_tiles.push( [ tile, 36 , 0, tilecoord , 0 ] );  
                             this.hints[ tilecoord ] =  properties["txt"];
                             
+                        } else if ( obj.type == "exit" ) {
+                            this.exits[ tilecoord ] = properties["to_level"];
                         }
                     }
                 }
@@ -2491,16 +2676,20 @@ export class Stage {
 
 
                         // 2,3,4,5 : lockpad wall creation  
-                        // 6 socket creation
-                        } else if ( layers[ly].data[i] >= 2 && layers[ly].data[i] <= 6 ) {
+                        // 6 crystal wall creation
+                        } else if ( [2,3,4,5,6, 21 ].indexOf( layers[ly].data[i] ) > -1  ) {
                             
                             if ( this.removables[ i ] == null ) {
 
                                 // padlock wall refill
                                 let frame_x = 0;
                                 let frame_y = 15;
+
                                 if ( layers[ly].data[i] == 6 ) {
                                     frame_x = 0;
+                                    frame_y = 14;
+                                } else if ( layers[ly].data[i] == 21 ) {
+                                    frame_x = 6;
                                     frame_y = 14;
                                 }
 

@@ -600,10 +600,14 @@ class Index {
 
         // 3    
         if (inputSystem.isTriggered(InputAction.IA_ACTION_5, PointerEventType.PET_DOWN)){
-            //resources["stage"].debug();
+            resources["stage"].back_to_lobby();     
+        }
 
-            console.log( "yaw", resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) );
-
+        // 4
+        if (inputSystem.isTriggered(InputAction.IA_ACTION_6, PointerEventType.PET_DOWN)){
+            
+            resources["stage"].debug();
+            
         }
 
         

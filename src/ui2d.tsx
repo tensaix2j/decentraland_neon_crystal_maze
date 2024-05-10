@@ -212,7 +212,14 @@ export class UI2D {
                     }
                 }}
                 uiText={{ 
-                    value: "Level: " + (resources["stage"].level_index + 1) + " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining, 
+                    value: ( 
+                        ( resources["stage"].level_index > 0 )?  
+                            (
+                                ( resources["stage"].level_index <= 20 )? 
+                                  "Level: " +  resources["stage"].level_index        + " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining
+                                : "Level: " + (resources["stage"].level_index - 20 ) + " \t\tProcedural Sokoban Mode" 
+                            )
+                        : "Lobby" ) , 
                     fontSize: 40 ,
                     color: Color4.White()
             
@@ -265,12 +272,11 @@ export class UI2D {
                     value: "\
 Instructions:\n\
 W,A,S,D to move.\n\
-1. Collect all crystals\n\
-2. Reach Exit to complete level.\n\
-3. Read hints to learn about\ndifferent puzzle elements\non different levels\n\
+Read hints to learn about\ndifferent puzzle elements\non different levels\n\
 \n\
-Press [1] to restart level\n\
-Press [2] to reset camera angle\n\
+Press [1] Restart current level\n\
+Press [2] Reset camera angle\n\
+Press [3] Back to lobby level\n\
 \n\
                     ", 
                     fontSize: 22 ,
