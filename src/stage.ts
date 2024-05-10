@@ -2052,19 +2052,23 @@ export class Stage {
 
                     if ( sokoban.doorMap[j+","+i] == 1 ) {
                         layers[2].data[ tile_z * 32 + tile_x ] = 21;  
+                        layers[0].data[ tile_z * 32 + tile_x ] = 33;  
                         layers[0].data[ (tile_z - 1) * 32 + tile_x ] = 34;  
                         
 
                     } else if ( sokoban.doorMap[j+","+i] == 2 ) {
                         layers[2].data[ tile_z * 32 + tile_x ] = 21;
+                        layers[0].data[ tile_z * 32 + tile_x ] = 33;  
                         layers[0].data[ (tile_z + 1) * 32 + (tile_x  ) ] = 34;    
                         
                     } else if ( sokoban.doorMap[j+","+i] == 3 ) {
                         layers[2].data[ tile_z * 32 + tile_x ] = 21; 
+                        layers[0].data[ tile_z * 32 + tile_x ] = 33;  
                         layers[0].data[ (tile_z ) * 32 + (tile_x - 1 ) ] = 34;     
                         
                     } else if ( sokoban.doorMap[j+","+i] == 4 ) {
                         layers[2].data[ tile_z * 32 + tile_x ] = 21; 
+                        layers[0].data[ tile_z * 32 + tile_x ] = 33;  
                         layers[0].data[ (tile_z) * 32 + (tile_x + 1 ) ] = 34;     
                         
                     } else if ( sokoban.surrounded(j,i) == false  ) {
@@ -2076,6 +2080,21 @@ export class Stage {
 
                 if ( sokoban.playerX == j && sokoban.playerY == i ) {
                     layers[3].data[ tile_z * 32 + tile_x ] = 35;
+                }
+                // Incase of leaking wall
+                if ( sokoban.nodes[j][i].wall == false ) {
+                    if ( i == 0 ) {
+                        layers[1].data[ (tile_z - 1 ) * 32 + tile_x ] = 1; 
+                    }
+                    if ( i == sokoban.ySize - 1 ) {
+                        layers[1].data[ (tile_z + 1 ) * 32 + tile_x ] = 1; 
+                    }
+                    if ( j == 0 ) {
+                        layers[1].data[ (tile_z ) * 32 + (tile_x - 1) ] = 1; 
+                    }
+                    if ( j == sokoban.xSize - 1 ) {
+                        layers[1].data[ (tile_z ) * 32 + (tile_x + 1) ] = 1; 
+                    }
                 }
             }
 

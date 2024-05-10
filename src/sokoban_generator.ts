@@ -261,6 +261,7 @@ export class SokobanGenerator {
         this.placeObjects(NumBoxes);
         this.rip(randomInt(-2, 5));
         generatePaths( this );
+        
         this.createDoors();
 
     }

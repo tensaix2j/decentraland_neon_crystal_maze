@@ -191,13 +191,13 @@ class Index {
     createModifierArea() {
 
         const ent = engine.addEntity()
-        /*
+        
         AvatarModifierArea.create(ent, {
             area: Vector3.create( this.scene_parcels.x * 16,  this.scene_parcels.y * 16,  this.scene_parcels.z * 16),
             modifiers: [AvatarModifierType.AMT_DISABLE_PASSPORTS, AvatarModifierType.AMT_HIDE_AVATARS],
             excludeIds: []
         })
-        */
+        
 
         CameraModeArea.create(ent, {
             area: Vector3.create( this.scene_parcels.x * 16,  this.scene_parcels.y * 16,  this.scene_parcels.z * 16),
