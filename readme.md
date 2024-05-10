@@ -28,3 +28,10 @@ Strategic Thinking: Strategize your moves meticulously to optimize your crystal 
 Neon Crystal Maze seamlessly blends classic puzzle-solving gameplay with an immersive neon-themed world of exploration and discovery. Are you prepared to embark on a crystal-collecting odyssey and unravel the mysteries of 
 the maze? Brace yourself for an enthralling adventure filled with glowing crystals and thrilling challenges in Neon Crystal Maze!
 
+Bonus Unlimited Sokoban Mode: Experience the excitement of Procedurally Generated Sokoban, where levels are dynamically crafted through algorithms, guaranteeing limitless enjoyment.
+
+
+
+
+
+
