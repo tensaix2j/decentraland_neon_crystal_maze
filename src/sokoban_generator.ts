@@ -90,7 +90,8 @@ function generatePaths(lvl) {
         var boxPaths = CalcualteBoxPaths(lvl, ghostBoxes);
 
         //calculate the player paths to all boxes and choose the lowest cost path
-        var playerPaths = CalcualtePlayerPaths(lvl, ghostBoxes, boxPaths);
+        var playerPaths = CalculatePlayerPaths(lvl, ghostBoxes, boxPaths);
+
         var bestPath = playerPaths[1];
         var playerPath = playerPaths[0][bestPath][0];
         var boxPath = boxPaths[bestPath][0];
@@ -180,7 +181,7 @@ function CalcualteBoxPaths(lvl, ghostBoxes) {
 
 //--------------------------------
 //return all player paths and the index of the lowest cost one
-function CalcualtePlayerPaths(lvl, ghostBoxes, boxPaths):any[] {
+function CalculatePlayerPaths(lvl, ghostBoxes, boxPaths):any[] {
     
     var playerPaths:any[] = [];
     var bestPath = -1;

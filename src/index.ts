@@ -28,8 +28,10 @@ import {
 
 import { getUserData } from '~system/UserIdentity'
 import { movePlayerTo } from '~system/RestrictedActions'
+import { getRealm } from '~system/Runtime'
 
 
+import { Utils } from "./utils"
 
 import resources from "./resources";
 import { Stage } from "./stage";
@@ -104,6 +106,7 @@ class Index {
     //----
     async init_async() {
         await this.init_userData();
+        await this.register_visitors();
     }
 
 
@@ -111,14 +114,20 @@ class Index {
     //--------------
     async init_userData() {
 
-        console.log("init_userData");
+        
         if ( resources["userData"] == null ) {
         
             const userData = await getUserData({})
             console.log( "Check", userData.data ); 
             resources["userData"] = userData.data;
         }
+        if ( resources["realm"] == null ) {
+            resources["realm"] = await getRealm({});
+            resources["reqrealm"] = resources["realm"].realmInfo.baseUrl;
+        }
 
+        console.log("init_userData", resources["userData"], resources["reqrealm"]);
+        
     }
 
 
@@ -232,6 +241,76 @@ class Index {
         
         return ent;
     }
+
+
+
+  
+
+    //-----
+    async register_visitors( ) {
+        
+        let server_host = "https://labs.muadao.build/molecule_scene_api"; 
+		let url = server_host + "/insert_or_update_visitors";
+        
+        let body = {
+			address	     : resources["userData"].userId.toLowerCase(),
+			username     : resources["userData"].displayName,
+            scene_id     : 1000,
+            signature 	: Utils.sha256( resources["userData"].userId.toLowerCase() + resources["reqrealm"]  ),     
+            realm     : resources["reqrealm"]      
+		}
+        
+		let fetchopt = {
+			headers: {
+				'content-type': 'application/json'
+			},
+			body: JSON.stringify(body),
+			method: 'POST'
+		};
+		let _this = this;
+		try {
+			let resp = await fetch(url, fetchopt ).then(response => response.text())
+			console.log("sent request to URL", url , "SUCCESS", resp );
+            
+		} catch(err) {
+			console.log("error to do", url, fetchopt, err );
+		}
+	}
+
+
+    //---------------
+	async submit_highscore( score , game_id ) {
+	
+		let url = "https://labs.muadao.build/molecule_scene_api/insert_or_update_record";
+		
+		let body = {
+			username	: resources["userData"].displayName,
+			useraddr	: resources["userData"].userId.toLowerCase(),
+			score   	: score,
+			game_id 	: game_id,
+			game    	: "cmaze",
+			signature 	: Utils.sha256( resources["userData"].userId.toLowerCase() + resources["reqrealm"]  + score ),
+            realm     : resources["reqrealm"]     
+		}
+		 
+		let fetchopt = {
+			headers: {
+				'content-type': 'application/json'
+			},
+			body: JSON.stringify(body),
+			method: 'POST'
+		};
+		let _this = this;
+		try {
+			let resp = await fetch(url, fetchopt ).then(response => response.text())
+			console.log("sent request to URL", url , "SUCCESS", resp );
+            
+		} catch(err) {
+			console.log("error to do", url, fetchopt, err );
+		}
+	}
+
+
 
     //-----------
     createCameraBox() {

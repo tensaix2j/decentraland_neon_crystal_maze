@@ -1970,11 +1970,15 @@ export class Stage {
         this.game_state = 0;
     }
 
+
+
     //-----
     // E on pressed
     next_level() {
 
         if ( this.game_state == 3 ) {
+
+            resources["ui"]["notification"].text = "Please wait a while... Generating level..."
 
             this.clear_static_objects();
             this.clear_inventory();
@@ -1982,7 +1986,7 @@ export class Stage {
             if ( this.player_stats[11] == null ) {
                 this.level_index = this.level_index + 1 ;
             } else {
-
+ 
                 // Custom level
                 this.level_index = this.player_stats[11];
                 this.player_stats[11] = null;
@@ -2028,8 +2032,14 @@ export class Stage {
         ]
         
         let sokoban 
+
+        let sizes       = [ 8,8,9,9, 10, 10 , 11,11, 12,12,13,13,14,14,15,15,16,16,17,17,18,18 ];
+        let numBoxes    = [ 2,3,3,4,  4,  4,   5, 5,  5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9,10,10 ];
+        let size        =  sizes[ this.level_index - this.levels.length ];
+        let num_of_box  =  numBoxes[ this.level_index - this.levels.length ];
+        
         for ( let i = 0 ; i < 5 ; i++ ) {
-            sokoban = new SokobanGenerator(12,12,6 );
+            sokoban = new SokobanGenerator( size , size , num_of_box );
             if ( sokoban.trash == false ) {
                 break;
             }
@@ -2039,8 +2049,8 @@ export class Stage {
 
             for ( let j = 0 ; j < sokoban.nodes[i].length ; j++ ) {
                 
-                let tile_x = j + 15;
-                let tile_z = i + 15;
+                let tile_x = j + 3;
+                let tile_z = i + 3;
  
                 if ( sokoban.boxMap[j+","+i] ) {
                     layers[2].data[ tile_z * 32 + tile_x ] = 7;
@@ -2109,8 +2119,6 @@ export class Stage {
     //-----
     victory( v_tilecoord:number ) {
 
-        
-        
         for ( let i = this.static_tiles.length - 1 ; i >= 0 ; i-- ) {
             
             let tilecoord = this.static_tiles[i][3] ;
@@ -2134,6 +2142,11 @@ export class Stage {
         this.clear_dynamic_objects();
         this.game_state = 3;
 
+        if ( this.level_index <= 20 ) {
+            resources["index"].submit_highscore( this.level_index, 0 ); 
+        } else {
+            resources["index"].submit_highscore( this.level_index, 1 ); 
+        }
     }
 
     //-------
