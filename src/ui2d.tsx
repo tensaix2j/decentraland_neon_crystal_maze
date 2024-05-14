@@ -215,9 +215,9 @@ export class UI2D {
                     value: ( 
                         ( resources["stage"].level_index > 0 )?  
                             (
-                                ( resources["stage"].level_index <= 20 )? 
+                                ( resources["stage"].level_index <= resources["stage"].levels.length )? 
                                   "Level: " +  resources["stage"].level_index        + " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining
-                                : "Level: " + (resources["stage"].level_index - 20 ) + " \t\tProcedural Sokoban Mode" 
+                                : "Level: " + (resources["stage"].level_index - resources["stage"].levels.length - 1  ) + " \t\tProcedural Sokoban Mode" 
                             )
                         : "Lobby" ) , 
                     fontSize: 40 ,
@@ -295,7 +295,7 @@ Press [3] Back to lobby level\n\
         return <UiEntity
             uiTransform={{
                 width: 1600,
-                height: 200,
+                height: 280,
                 positionType: 'absolute',
                 position: {
                     bottom: 400

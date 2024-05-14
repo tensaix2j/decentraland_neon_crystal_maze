@@ -49,10 +49,21 @@ import cc1_08 from "./levels/cc1_08"
 import cc1_09 from "./levels/cc1_09"
 import cc1_10 from "./levels/cc1_10"
 import cc1_11 from "./levels/cc1_11"
+
+import cclp1_121 from "./levels/cclp1_121"
+import cclp3_15 from "./levels/cclp3_15"
+import cclp1_72 from "./levels/cclp1_72"
+import cclp1_54 from "./levels/cclp1_54"
+import cclp3_28 from "./levels/cclp3_28"
+import cclp3_12 from "./levels/cclp3_12"
+import cclp3_31 from "./levels/cclp3_31"
+import cclp3_52 from "./levels/cclp3_52";
+
+
 import sokoban_01 from "./levels/sokoban_01";
 import lobby from "./levels/lobby";
 
-import debug from "./levels/debug02"
+import debug from "./levels/cclp3_52_debug"
 
 interface Layer {
     data: any[];
@@ -98,7 +109,7 @@ export class Stage {
     public standard_floor_color = Color4.fromInts(  39, 32, 30, 255 );
     public standard_dirt_color  = Color4.fromInts( 100, 80, 40, 255 );
 
-    public ice_sliding_speed    = 0.33;
+    public ice_sliding_speed    = 0.31; //0.31
     public force_floor_sliding_speed = 0.31;
 
 
@@ -130,10 +141,23 @@ export class Stage {
         cc1_09,      // everyone in one
         cc1_10,      // maze with fire
         cc1_11,      // maze with 3 lanes
+        
 
+        // Advanced levels
+        cclp1_121,      // ships
+        cclp3_15,       // bumper ice
+        cclp1_72,       // dont take fireboot
+        cclp1_54,       // pyramid
+        
+        cclp3_28,       // pacman
+        cclp3_12,       // friend
+        cclp3_31,       // bouncing block
+        cclp3_52,       // dolly mixture
+        
     ]
 
-    public level_index = 0;
+
+    public level_index = 0; 
  
 
 
@@ -182,6 +206,10 @@ export class Stage {
                     
                     // Deplete inventory
                     resources["ui"]["inventory"]["items"][inventory_id].count -= 1;
+                    if ( resources["ui"]["inventory"]["items"][ inventory_id ].count > 1 ) {
+                        resources["ui"]["inventory"]["items"][ inventory_id ].count_lbl = resources["ui"]["inventory"]["items"][ inventory_id ].count + ""  ;
+                    }
+
                     if ( resources["ui"]["inventory"]["items"][ inventory_id ].count <= 1 ) {
                         resources["ui"]["inventory"]["items"][ inventory_id ].count_lbl = ""  ;
                         if ( resources["ui"]["inventory"]["items"][ inventory_id ].count <= 0 ) {
@@ -380,7 +408,7 @@ export class Stage {
         
                 // Water trap
                 resources["index"].play_sound("water");
-                this.gameover("Dropped into water without flippers");
+                this.gameover("Dropped into water without flippers", 37 );
 
                 // Position player to seem like dropped into water.
                 Transform.getMutable(this.player).position.y = -0.2;
@@ -400,7 +428,7 @@ export class Stage {
                 // survive
             } else {
                 resources["index"].play_sound("fire");
-                this.gameover("Killed by fire");
+                this.gameover("Killed by fire", 38 );
             }
         }
 
@@ -412,7 +440,7 @@ export class Stage {
             delete this.removables[ tilecoord ];
             
             this.create_explosions_on_tile( tilecoord );
-            this.gameover("Killed by a bomb");
+            this.gameover("Killed by a bomb", 99 );
             
             
         }
@@ -437,7 +465,7 @@ export class Stage {
                 let direction     = [-1,-32,1,32][ tile_data_bg - 39 ];
                 let new_tilecoord = tilecoord + direction;
                 
-                if ( this.check_is_tile_passable( new_tilecoord, direction ) == true  ) {
+                if ( this.check_is_tile_passable_for_player( new_tilecoord, direction ) == true  ) {
                     // for consistency with monster,  2: progress, 6:direction, 7: new_tilecoord
                     this.player_stats[2] = 0;
                     this.player_stats[3] = this.tilecoord_to_position( tilecoord );
@@ -465,7 +493,7 @@ export class Stage {
 
                 
                 let direction = tilecoord - prev_tilecoord;
-                let new_tilecoord = this.get_new_tilecoord_on_ice(  tilecoord, direction, tile_data_bg , this.check_is_tile_passable.bind(this) );
+                let new_tilecoord = this.get_new_tilecoord_on_ice(  tilecoord, direction, tile_data_bg , this.check_is_tile_passable_for_player.bind(this) );
                 let new_direction = new_tilecoord - tilecoord;
 
                 
@@ -593,9 +621,11 @@ export class Stage {
                 if ( [". ", ",", " ", "，", "。", "、" ].indexOf( txt[i] ) > -1  ) {      
                     marks.push(i);
                     cnt = 0;
-                } else if ( txt[i] == "\n" ) {
-                    cnt = 0;
                 }
+            }
+            if ( txt[i] == "\n" ) {
+                marks.push(i);
+                cnt = 0;
             }
             cnt++;
         }
@@ -647,8 +677,11 @@ export class Stage {
 
             // if movable block lands on Player. Player Die
             if ( this.player_pos.z * 32 + this.player_pos.x == tilecoord ) {
-                this.gameover("Killed by a moving rock");
+                this.gameover("Killed by a moving rock", 7);
             }
+            
+            
+            
 
             // 37: If movable block lands on water
             if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 37  ) {
@@ -968,18 +1001,7 @@ export class Stage {
         if ( this.current_level_obj[  this.current_level_obj_index["fg"] ].data[  tilecoord  ] == 1  )  {
             ret = false;
         
-
-            
-        // lockpad (2-5) and crystal door(6)
-        } else if ( this.removables[ tilecoord  ] && 
-             this.removables[ tilecoord ][1] >= 2 && this.removables[ tilecoord ][1] <= 6  )  {
-            ret = false;
-            
-        // sokoban door
-        } else if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 21 ) {
-            
-            ret = false;
-
+        
         // togglable wall
         } else if ( this.togglables[ tilecoord  ] && 
             this.togglables[ tilecoord ][1] >= 50 && this.togglables[ tilecoord ][1] <= 51 &&
@@ -1023,30 +1045,9 @@ export class Stage {
             }
 
 
-        // From ice corner to other tile also need to consider.
-        // So we check from other tile's perspective
-        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction  ] == 44 ) {
-            if ( direction == -1 || direction == -32 ) {
+       
 
-                ret = false;
-            }
-        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction  ] == 45 ) {
-            if ( direction ==  1 || direction == -32 ) {
-
-                ret = false;
-            }
-        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction ] == 46 ) {
-            if ( direction == -1 || direction == 32 ) {
-                ret = false;
-            }
-        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction ] == 47 ) {
-            if ( direction == 1 || direction == 32 ) {
-
-                ret = false;
-            }
-
-
-        // thin wall 
+        // from other to thin wall 
         } else if ( this.current_level_obj[  this.current_level_obj_index["fg"] ].data[  tilecoord  ] == 13  )  {
             if ( direction == 1 ) {
                 ret = false;
@@ -1081,11 +1082,38 @@ export class Stage {
             if ( direction == -1 || direction == -32 ) {
                 ret = false;
             }
+        }
+        
 
+
+
+
+         // From ice corner to other tile also need to consider.
+        // So we check from other tile's perspective
+        if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction  ] == 44 ) {
+            if ( direction == -1 || direction == -32 ) {
+
+                ret = false;
+            }
+        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction  ] == 45 ) {
+            if ( direction ==  1 || direction == -32 ) {
+
+                ret = false;
+            }
+        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction ] == 46 ) {
+            if ( direction == -1 || direction == 32 ) {
+                ret = false;
+            }
+        } else if ( this.current_level_obj[  this.current_level_obj_index["bg"] ].data[  tilecoord - direction ] == 47 ) {
+            if ( direction == 1 || direction == 32 ) {
+
+                ret = false;
+            }
+        }
 
 
         // From thin wall to other
-        } else if ( this.current_level_obj[  this.current_level_obj_index["fg"] ].data[  tilecoord - direction  ] == 13  )  {
+        if ( this.current_level_obj[  this.current_level_obj_index["fg"] ].data[  tilecoord - direction  ] == 13  )  {
             if ( direction == -1 ) {
                 ret = false;
             }   
@@ -1127,10 +1155,36 @@ export class Stage {
 
     }
 
+    //-----------
+    check_is_tile_passable_non_player( tilecoord:number , direction:number ) {
+
+        let ret = true;
+
+        if ( this.check_is_tile_passable_general( tilecoord , direction ) == false ) {
+
+            ret = false;
+
+        // lockpad (2-5) and crystal door(6)
+        } else if ( this.removables[ tilecoord  ] && 
+            this.removables[ tilecoord ][1] >= 2 && this.removables[ tilecoord ][1] <= 6  )  {
+            
+            ret = false;
+                
+        // sokoban lock door
+        } else if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 21 ) {
+            
+            ret = false;
+        
+        }    
+        return ret;
+
+    }
+
+
 
     //-------
     // CHECK PLAYER PASSABLE
-    check_is_tile_passable( tilecoord:number , direction:number ) {
+    check_is_tile_passable_for_player( tilecoord:number , direction:number ) {
 
         let ret = true;
         
@@ -1143,8 +1197,7 @@ export class Stage {
         if ( this.check_is_tile_passable_general( tilecoord , direction ) == false ) {
 
             ret = false;
-        
-        
+            
         // Movable blocks (7), if there's a movable block, check if pushable or not.
         } else if ( this.movables[ tilecoord ] ) {
             
@@ -1154,8 +1207,21 @@ export class Stage {
                 // Cannot push into
                 ret = false;
             }
-        
         }
+
+        // For lock, if got key then open otherwise block
+        if ( this.removables[ tilecoord  ] && 
+            this.removables[ tilecoord ][1] >= 2 && this.removables[ tilecoord ][1] <= 6  )  {
+            
+            this.open_lock_if_bump_into_one( tilecoord );
+            ret = false;
+            
+        } 
+                
+        // sokoban lock door
+        if ( this.removables[ tilecoord ] && this.removables[ tilecoord ][1] == 21 ) {
+            ret = false;
+        } 
         
         return ret;
 
@@ -1168,7 +1234,7 @@ export class Stage {
 
         let ret = true;
         
-        if ( this.check_is_tile_passable_general( tilecoord , direction ) == false ) {
+        if ( this.check_is_tile_passable_non_player( tilecoord , direction ) == false ) {
             ret = false;
 
         // Movable blocks
@@ -1193,7 +1259,7 @@ export class Stage {
         let tile_data_bg    = this.current_level_obj[ this.current_level_obj_index["bg"] ].data[ tilecoord ];
         let tile_data_item  = this.current_level_obj[ this.current_level_obj_index["item"] ].data[ tilecoord ];
 
-        if ( this.check_is_tile_passable_general( tilecoord, direction ) == false ) {
+        if ( this.check_is_tile_passable_non_player( tilecoord, direction ) == false ) {
 
             ret = false;
 
@@ -1219,6 +1285,12 @@ export class Stage {
         } else if ( tile_data_item == 53 ) {
 
             ret = false
+
+
+        // exit
+        } else if ( tile_data_bg == 34 ) {
+
+            ret = false;
         
         // Movable blocks (7), 
         } else if ( this.movables[ tilecoord ] ) {
@@ -1248,16 +1320,13 @@ export class Stage {
         let tilecoord       =  this.player_pos.z * 32 + this.player_pos.x ;
         let tile_data_bg    = this.current_level_obj[ this.current_level_obj_index["bg"] ].data[ tilecoord ];
         
-        if ( this.movables[ tilecoord ] && this.movables[tilecoord][5] == null )  {    
+        let is_sliding = ( tile_data_bg >= 39 && tile_data_bg <= 47 );
+
+        if ( this.movables[ tilecoord ] && !is_sliding )  {    
 
             let movable = this.movables[ tilecoord ];
             
             let new_tilecoord = tilecoord + direction;
-            
-            // If the block on push is on corner ice, then the direction will take a 90 degree sharp turn
-            if ( tile_data_bg >= 44 && tile_data_bg <= 47 ) {
-                new_tilecoord = this.get_new_tilecoord_on_ice(  tilecoord, direction, tile_data_bg ,  this.check_is_tile_passable_for_movable_block.bind(this) );
-            }
             let new_direction = new_tilecoord - tilecoord;
             
             movable[1] = 7;
@@ -1312,7 +1381,7 @@ export class Stage {
         let new_tilecoord   = ( this.player_pos.z * 32 + this.player_pos.x ) + direction;
 
 
-        if ( this.check_is_tile_passable( new_tilecoord , direction ) == true ) {
+        if ( this.check_is_tile_passable_for_player( new_tilecoord , direction ) == true ) {
             
             this.player_stats[2] = 0;
             this.player_stats[3] = this.tilecoord_to_position( cur_tilecoord );
@@ -1943,6 +2012,9 @@ export class Stage {
         Transform.getMutable( this.player ).position.z = ( -this.player_pos.z + 15 ) * this.tile_size  ;
         Transform.getMutable( this.player ).position.y = 0.5;
 
+        Transform.getMutable( this.player ).rotation = Quaternion.fromEulerDegrees(0,0,0);
+
+        
     }
 
     //-------------
@@ -2142,25 +2214,18 @@ export class Stage {
         this.clear_dynamic_objects();
         this.game_state = 3;
 
-        if ( this.level_index <= 20 ) {
-            resources["index"].submit_highscore( this.level_index, 0 ); 
+        if ( this.level_index < this.levels.length ) {
+            if ( this.level_index <= 20 ) { 
+                resources["index"].submit_highscore( this.level_index, 0 ); 
+            } else {
+                resources["index"].submit_highscore( this.level_index, 1 ); 
+            }
         } else {
-            resources["index"].submit_highscore( this.level_index, 1 ); 
+            resources["index"].submit_highscore( this.level_index, 2 ); 
         }
     }
 
-    //-------
-    // GO: GAME OVER
-    gameover( die_message ) {
-
-        resources["index"].play_sound( "scream" );
-        resources["ui"]["bgmask"].visible = "flex";
-        resources["ui"]["notification"].text = "GAME OVER! \n\n" + die_message + "\n\nPress (1) To Restart.";
-        
-        this.game_state = 2;
-        Animator.playSingleAnimation( this.player , 'idle', false )
-
-    }
+    
 
 
     //---
@@ -2237,6 +2302,26 @@ export class Stage {
             resources["ui"]["inventory"]["items"][i].visible = "none";
             resources["ui"]["inventory"]["items"][i].count_lbl   = "";
             resources["ui"]["inventory"]["items"][i].count      = 0;
+        }
+    }
+
+
+    //-------
+    // GO: GAME OVER
+    gameover( die_message , type ) {
+
+        resources["index"].play_sound( "scream" );
+        resources["ui"]["bgmask"].visible = "flex";
+        resources["ui"]["notification"].text = "GAME OVER! \n\n" + die_message + "\n\nPress (1) To Restart.";
+        
+        this.game_state = 2;
+        Animator.playSingleAnimation( this.player , 'idle', false )
+
+        if ( type == 7 ) {
+            Transform.getMutable( this.player ).rotation = Quaternion.fromEulerDegrees( -90,0,0);
+            Transform.getMutable( this.player ).position.y = 0.5;
+            Transform.getMutable( this.player ).position.z += 0.6;
+            
         }
     }
 
@@ -2867,7 +2952,7 @@ export class Stage {
                                 this.pickables[ i ] = [ tile, layers[ly].data[i] ];
                             }
 
-                        // 50,51 toggle door , dynamic part creation
+                        // 50,51 toggle door creation
                         } else if ( layers[ly].data[i] >= 50 &&  layers[ly].data[i] <= 51 ) {
                             
                             if ( this.togglables[ i ] == null ) {
@@ -3183,7 +3268,7 @@ export class Stage {
                             break; 
                         }
                     }
-                    monster[8] = 0.09;
+                    monster[8] = 0.065;
 
                 }
 
@@ -3216,6 +3301,15 @@ export class Stage {
     console_log_tilecoord( label, tilecoord) {
         console.log( label , tilecoord % 32 , ",", (tilecoord / 32) >> 0 );
     }   
+
+    //-------
+    v2_distance( v1:Vector3, v2:Vector3 ):number {
+        let x_diff = v1.x - v2.x;
+        let z_diff = v1.z - v2.z;    
+        return x_diff * x_diff + z_diff * z_diff;
+    }
+
+
 
     //------------
 
@@ -3264,6 +3358,7 @@ export class Stage {
                 if ( _this.player_stats[2] >= passed_tile_lerp_threshold && _this.player_stats[10] == null ) {
 
                     _this.player_stats[10] = 1;
+
                     _this.player_pos.x =   new_tilecoord % 32;
                     _this.player_pos.z = ( new_tilecoord / 32 ) >> 0;  
                     _this.pickup_items();
@@ -3353,7 +3448,6 @@ export class Stage {
                             
                             _this.check_movable_block_current_tile( tilecoord, old_tilecoord );
                             resources["index"].play_sound("stone");
-                            
                         }
                     }
                 }
@@ -3417,12 +3511,12 @@ export class Stage {
                             if ( progress <= 0.5 ) {
                                 // if slerp progress <50% the monster is counted as still at current tile.
                                 if ( _this.player_pos.z * 32 + _this.player_pos.x == old_tilecoord ) {
-                                    _this.gameover("Killed by a monster");
+                                    _this.gameover("Killed by a monster", type );
                                 }
                             } else {
                                 // if slerp progress >50 the monster is counted as at the destination tile
                                 if ( _this.player_pos.z * 32 + _this.player_pos.x == tilecoord ) {
-                                    _this.gameover("Killed by a monster");
+                                    _this.gameover("Killed by a monster", type );
                                 }
                             }
 

@@ -95,6 +95,10 @@ class Index {
         this.createModifierArea();
         this.init_sounds();
         
+
+        resources["index"].fix_camerabox_position_instant();
+        resources["index"].resetCameraPosition();
+
         engine.addSystem( this.update );
         
     }
