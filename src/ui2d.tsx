@@ -217,7 +217,7 @@ export class UI2D {
                             (
                                 ( resources["stage"].level_index <= resources["stage"].levels.length )? 
                                   "Level: " +  resources["stage"].level_index        + " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining
-                                : "Level: " + (resources["stage"].level_index - resources["stage"].levels.length - 1  ) + " \t\tProcedural Sokoban Mode" 
+                                : "Level: " + (resources["stage"].level_index - resources["stage"].levels.length   ) + " \t\tProcedural Sokoban Mode" 
                             )
                         : "Lobby" ) , 
                     fontSize: 40 ,

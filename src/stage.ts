@@ -63,7 +63,7 @@ import cclp3_52 from "./levels/cclp3_52";
 import sokoban_01 from "./levels/sokoban_01";
 import lobby from "./levels/lobby";
 
-import debug from "./levels/cclp3_52_debug"
+import debug from "./levels/debug03"
 
 interface Layer {
     data: any[];
@@ -120,12 +120,12 @@ export class Stage {
         tutorial,   // intro to keys,water,ice,fire,force
         cc1_02,     // intro to block
         cclp1_04,   // block practice
-        sokoban_01, // basic sokoban level
-        
         cc1_03,     // intro to boots
+        
         cclp1_02,   // boots practice
         cclp1_03,   // boots practice
         cc1_04,     // intro to blue,green switches
+        sokoban_01, // basic sokoban level
         
         cclp1_08,   // blue,green switches practice
         cc1_05,     // intro to red, yellow switches
@@ -153,6 +153,8 @@ export class Stage {
         cclp3_12,       // friend
         cclp3_31,       // bouncing block
         cclp3_52,       // dolly mixture
+
+        debug,
         
     ]
 
@@ -1429,7 +1431,17 @@ export class Stage {
                 loop: true,
               },
               {
+                clip: 'idle_swim',
+                playing: true,
+                loop: true,
+              },
+              {
                 clip: 'walk',
+                playing: false,
+                loop: true
+              },
+              {
+                clip: 'swim',
                 playing: false,
                 loop: true
               }
@@ -2038,6 +2050,8 @@ export class Stage {
         this.clear_inventory();
         this.level_index = 0;
         this.load_level( this.levels[ this.level_index ].layers );
+        this.restart_level();
+
         resources["ui"]["notification"].text = ""
         this.game_state = 0;
     }
@@ -2121,8 +2135,8 @@ export class Stage {
 
             for ( let j = 0 ; j < sokoban.nodes[i].length ; j++ ) {
                 
-                let tile_x = j + 3;
-                let tile_z = i + 3;
+                let tile_x = j + 10;
+                let tile_z = i + 10;
  
                 if ( sokoban.boxMap[j+","+i] ) {
                     layers[2].data[ tile_z * 32 + tile_x ] = 7;
@@ -3340,7 +3354,13 @@ export class Stage {
                 Transform.getMutable( _this.player ).position = Vector3.lerp( start, end ,  _this.player_stats[2] );
                 Transform.getMutable( _this.player ).rotation = Quaternion.fromEulerDegrees( 0 , _this.get_y_rot_by_direction( direction), 0 );
 
-                Animator.playSingleAnimation( _this.player , 'walk', false )
+                if ( _this.current_level_obj[ _this.current_level_obj_index["bg"] ].data[cur_tilecoord]  == 37 && _this.creatables[ cur_tilecoord ] == null ) {
+                     
+                    Animator.playSingleAnimation( _this.player , 'swim', false )
+                } else {
+                    Animator.playSingleAnimation( _this.player , 'walk', false )
+                }
+
 
                 // UPDATE PLAYER
 
@@ -3405,7 +3425,14 @@ export class Stage {
                 if ( has_down == 1 ) {
                    
                 } else { 
-                     Animator.playSingleAnimation( _this.player , 'idle', false )
+
+                    let cur_tilecoord   = _this.player_pos.z * 32 + _this.player_pos.x;
+                    if ( _this.current_level_obj[ _this.current_level_obj_index["bg"] ].data[cur_tilecoord]  == 37 && _this.creatables[ cur_tilecoord ] == null  ) {
+
+                        Animator.playSingleAnimation( _this.player , 'idle_swim', false )
+                    } else {
+                        Animator.playSingleAnimation( _this.player , 'idle', false )
+                    }
                 }
 
 
