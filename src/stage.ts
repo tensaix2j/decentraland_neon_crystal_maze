@@ -58,12 +58,13 @@ import cclp3_28 from "./levels/cclp3_28"
 import cclp3_12 from "./levels/cclp3_12"
 import cclp3_31 from "./levels/cclp3_31"
 import cclp3_52 from "./levels/cclp3_52";
-
+import cclp2_103 from "./levels/cclp2_103";
+import cclp3_86 from "./levels/cclp3_86";
 
 import sokoban_01 from "./levels/sokoban_01";
 import lobby from "./levels/lobby";
 
-import debug from "./levels/debug03"
+import debug from "./levels/debug02"
 
 interface Layer {
     data: any[];
@@ -145,7 +146,7 @@ export class Stage {
 
         // Advanced levels
         cclp1_121,      // ships
-        cclp3_15,       // bumper ice
+        cclp3_15,       // bumper ice 
         cclp1_72,       // dont take fireboot
         cclp1_54,       // pyramid
         
@@ -154,12 +155,13 @@ export class Stage {
         cclp3_31,       // bouncing block
         cclp3_52,       // dolly mixture
 
-        debug,
+        cclp2_103,      // island hopping
+        cclp3_86,       // catch a thief
         
     ]
 
 
-    public level_index = 0; 
+    public level_index = 0 ; 
  
 
 
@@ -780,13 +782,14 @@ export class Stage {
 
     //--------
     // CMCT
-    check_monster_current_tile(  tilecoord:number ) {
+    check_monster_current_tile(  tilecoord:number, prev_tilecoord:number ) {
         
 
         if ( this.monsters[ tilecoord ] ) {
 
             let tile_data_item  = this.current_level_obj[ this.current_level_obj_index["item"] ].data[ tilecoord ];
-
+            let tile_data_bg    = this.current_level_obj[ this.current_level_obj_index["bg"] ].data[ tilecoord ];
+            
             // 52 trap
             if ( tile_data_item == 52 ) {
                 if ( this.is_trap_active( tilecoord ) == true ) {
@@ -820,6 +823,61 @@ export class Stage {
                     delete this.monsters[ tilecoord ];
                 }
             }
+
+
+            // If monster lands on ice then it will slide.
+            if ( tile_data_bg >= 43 && tile_data_bg <= 47 ) {
+
+                let monster = this.monsters[tilecoord];
+
+                let direction = tilecoord - prev_tilecoord;
+                let new_tilecoord = this.get_new_tilecoord_on_ice(  tilecoord, direction, tile_data_bg , this.check_is_tile_passable_for_monster.bind(this) );
+                let new_direction = new_tilecoord - tilecoord;
+                let sy = Transform.getMutable( monster[0] ).position.y; 
+
+                monster[2] = 0;
+                monster[3] = this.tilecoord_to_position( tilecoord );
+                monster[3].y = sy;
+                monster[4] = this.tilecoord_to_position( new_tilecoord );
+                monster[4].y = sy;
+                monster[6] = new_direction; 
+                monster[7] = tilecoord; //save old
+                monster[8] = this.ice_sliding_speed;  //speed
+                
+                delete this.monsters[ tilecoord ];
+                this.monsters[ new_tilecoord ] = monster;
+                
+            }
+
+
+            // If monster lands on force floor
+            if ( tile_data_bg >= 39 && tile_data_bg <= 42 ) {
+
+                let monster = this.monsters[tilecoord];
+
+                let direction     = [-1,-32,1,32][ tile_data_bg - 39 ];
+                let new_tilecoord = tilecoord + direction;
+                let new_direction = direction;
+                let sy = Transform.getMutable( monster[0] ).position.y; 
+
+
+                if ( this.check_is_tile_passable_for_monster( new_tilecoord, monster[1], direction ) == true  ) {
+                    
+                    monster[2] = 0;
+                    monster[3] = this.tilecoord_to_position( tilecoord );
+                    monster[3].y = sy;
+                    monster[4] = this.tilecoord_to_position( new_tilecoord );
+                    monster[4].y = sy;
+                    monster[6] = new_direction; 
+                    monster[7] = tilecoord; //save old
+                    monster[8] = this.ice_sliding_speed;  //speed
+                    
+                    delete this.monsters[ tilecoord ];
+                    this.monsters[ new_tilecoord ] = monster;
+                }
+
+            }
+
 
             // 48,49,80,81 Tile buttons
             if ( [48,49,80,81,82].indexOf( tile_data_item) > -1 ) {
@@ -868,7 +926,7 @@ export class Stage {
             
             for ( let tilecoord in this.togglables ) {
 
-                // Make sure it is 50-51: togglable walls
+                // Make sure it is 50-51: toggle door
                 if ( this.togglables[ tilecoord ][1] >= 50 && this.togglables[ tilecoord ][1] <= 51 ) {
 
                     this.togglables[ tilecoord ][2] = 1 - this.togglables[ tilecoord ][2];
@@ -984,7 +1042,7 @@ export class Stage {
                 
                 //                                        progrss start end  isdead  
                 this.monsters[ tilecoord ] = [ tile, type, null, null, null, null, direction ];
-                this.check_monster_current_tile(  tilecoord );
+                this.check_monster_current_tile(  tilecoord , tilecoord - direction );
                 this.monsters_next_move( tilecoord ); 
             
             }
@@ -2380,6 +2438,22 @@ export class Stage {
             }
         }
 
+        //toggle door reverted.
+        for ( let tilecoord in this.togglables ) {
+            
+            if ( this.togglables[ tilecoord ][1] >= 50 && this.togglables[ tilecoord ][1] <= 51 ) {
+
+                let tile = this.togglables[ tilecoord ][0] ;
+                if ( this.togglables[ tilecoord ][1] == 50 ) {
+                    Transform.getMutable(tile).position.y = -2;
+                    this.togglables[ tilecoord ][2] = 0;
+                } else {
+                    Transform.getMutable(tile).position.y = 1;
+                    this.togglables[ tilecoord ][2] = 1;                    
+                }
+            }
+        }
+
         // monster
         for ( let tilecoord in this.monsters ) {
             let tile = this.monsters[tilecoord][0];
@@ -3066,7 +3140,7 @@ export class Stage {
             // 6 head direction
             // 9 istrapped
 
-            if ( monster[9] != 1)  {
+            if ( monster[9] != 1 && monster[2] == null )  {
 
 
                 
@@ -3549,12 +3623,8 @@ export class Stage {
 
                             if ( _this.monsters[tilecoord][2] >= 0.99 ) {
                                 
-                                
-                                // Only generate next move if not trapped.
-                                if ( _this.monsters[tilecoord][10] == null  ) {
-                                    _this.monsters[tilecoord][10] = 1;
-                                    _this.check_monster_current_tile(  tilecoord );
-                                }
+                                _this.monsters[tilecoord][2] = null;
+                                _this.check_monster_current_tile(  tilecoord , old_tilecoord );
                                 _this.monsters_next_move( tilecoord );
                                 
                                 
