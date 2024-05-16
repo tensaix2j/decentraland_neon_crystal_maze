@@ -2,7 +2,7 @@
 # Neon Crystal Maze
 This is an entry for DCL Game Jam 2024
 
-Watch Demo PlayThrough Video [here](https://www.youtube.com/watch?v=c2_BlmWovIM)
+Watch Demo PlayThrough Video [here](https://www.youtube.com/watch?v=ZPh51bwoTZ4)
 
 Play Demo [here](https://play.decentraland.org/?realm=tensaix2j.dcl.eth)
 
