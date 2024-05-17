@@ -43,9 +43,7 @@ class Index {
     public scene_parcels = Vector3.create(4,4,4);
     public camerabox;
     public delayed_init_done = 0;
-    public last_pos = Vector3.create(0,0,0);
-    public last_pos_adjusting = 0;
-
+    
     
     //--------------
     constructor() {
@@ -369,50 +367,59 @@ class Index {
     //----
     fix_camerabox_position2() {
 
+        let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
+        let player_transform = Transform.getMutable( resources["stage"].player );
+        let stage_root_transform  = Transform.getMutable( resources["stage"].root );
+
+
+        let yaw = resources["index"].getEulerYawFromQuaternion( Transform.get(engine.CameraEntity).rotation ) ;
+        let x_offset = 0;
+        let z_offset = 3;
         
-        if ( this.last_pos.x != resources["stage"].player_pos.x || this.last_pos.z != resources["stage"].player_pos.z ) {
+        if ( yaw >= -45 && yaw <= 45 ) {
             
-            this.last_pos_adjusting = 1;
-            this.last_pos.x = resources["stage"].player_pos.x;
-            this.last_pos.z = resources["stage"].player_pos.z;
+            x_offset = 0;
+            z_offset = 3;
+                
+        } else if ( yaw >= -135 && yaw <= -45 ) {
+            
+            x_offset = -3;
+            z_offset = 0;
+        
+        } else if ( yaw < -135 || yaw > 135 ) {
+            
+            x_offset = 0;
+            z_offset = -3;
+        
+        } else if ( yaw >= 45 && yaw <= 135 ) {
+
+            x_offset = 3;
+            z_offset = 0;
         }
+        
+        let target_position = Vector3.create(   
+            player_transform.position.x     + stage_root_transform.position.x - x_offset,
+            camera_box_transform.position.y  ,
+            player_transform.position.z     + stage_root_transform.position.z - z_offset ,
+        );
+        
+    
+        // immediate
+        //camera_box_transform.position.x = target_position.x; 
+        //camera_box_transform.position.y = target_position.y; 
+        //camera_box_transform.position.z  = target_position.z; 
 
-        if ( this.last_pos_adjusting == 1) {
-
-            let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
-            let player_transform = Transform.getMutable( resources["stage"].player );
-            let stage_root_transform  = Transform.getMutable( resources["stage"].root );
-
-
-            let yaw_rad = resources["index"].getEulerYawFromQuaternion2( Transform.get(engine.CameraEntity).rotation ) ;
-            let distance = 4;
-            let x_offset = distance * Math.sin( yaw_rad );
-            let z_offset = distance * Math.cos( yaw_rad ); 
-            
-            let target_position = Vector3.create(   
-                player_transform.position.x     + stage_root_transform.position.x - x_offset,
-                camera_box_transform.position.y  ,
-                player_transform.position.z     + stage_root_transform.position.z - z_offset ,
+        if ( Vector3.distanceSquared( 
+            camera_box_transform.position , 
+            target_position ) > 1
+        ) {
+            camera_box_transform.position = Vector3.lerp( 
+                camera_box_transform.position,
+                target_position,
+                0.03
             );
-            
-        
-            // immediate
-            //camera_box_transform.position.x = target_position.x; 
-            //camera_box_transform.position.y = target_position.y; 
-            //camera_box_transform.position.z  = target_position.z; 
-            if ( Vector3.distanceSquared( 
-                camera_box_transform.position , 
-                target_position ) > 1
-            ) {
-                camera_box_transform.position = Vector3.lerp( 
-                    camera_box_transform.position,
-                    target_position,
-                    0.03
-                );
-            } else {
-                this.last_pos_adjusting = 0;
-            }
-        }
+        } 
+    
        
         
     }
