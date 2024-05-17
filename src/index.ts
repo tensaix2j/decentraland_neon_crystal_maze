@@ -42,7 +42,11 @@ class Index {
 
     public scene_parcels = Vector3.create(4,4,4);
     public camerabox;
+    public delayed_init_done = 0;
+    public last_pos = Vector3.create(0,0,0);
+    public last_pos_adjusting = 0;
 
+    
     //--------------
     constructor() {
 
@@ -96,8 +100,7 @@ class Index {
         this.init_sounds();
         
 
-        resources["index"].fix_camerabox_position_instant();
-        resources["index"].resetCameraPosition();
+        
 
         engine.addSystem( this.update );
         
@@ -105,7 +108,11 @@ class Index {
 
 
 
-
+    //-----
+    delayed_init() {
+        resources["index"].fix_camerabox_position_instant();
+        resources["index"].resetCameraPosition();
+    }
 
     //----
     async init_async() {
@@ -363,43 +370,50 @@ class Index {
     fix_camerabox_position2() {
 
         
-        let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
-        let player_transform = Transform.getMutable( resources["stage"].player );
-        let stage_root_transform  = Transform.getMutable( resources["stage"].root );
-
-
-        let yaw_rad = resources["index"].getEulerYawFromQuaternion2( Transform.get(engine.CameraEntity).rotation ) ;
-        let distance = 4;
-        let x_offset = distance * Math.sin( yaw_rad );
-        let z_offset = distance * Math.cos( yaw_rad ); 
-
-
-        let target_position = Vector3.create(   
-            player_transform.position.x     + stage_root_transform.position.x - x_offset,
-            camera_box_transform.position.y  ,
-            player_transform.position.z     + stage_root_transform.position.z - z_offset ,
-        );
-        
-       
-        // immediate
-        //camera_box_transform.position.x = target_position.x; 
-        //camera_box_transform.position.y = target_position.y; 
-        //camera_box_transform.position.z  = target_position.z; 
-
-        // slowly
-        if ( Vector3.distanceSquared( 
-            camera_box_transform.position , 
-            target_position ) > 2
-        ) {
+        if ( this.last_pos.x != resources["stage"].player_pos.x || this.last_pos.z != resources["stage"].player_pos.z ) {
             
-            camera_box_transform.position = Vector3.lerp( 
-                camera_box_transform.position,
-                target_position,
-                0.03
+            this.last_pos_adjusting = 1;
+            this.last_pos.x = resources["stage"].player_pos.x;
+            this.last_pos.z = resources["stage"].player_pos.z;
+        }
+
+        if ( this.last_pos_adjusting == 1) {
+
+            let camera_box_transform = Transform.getMutable( resources["index"].camerabox );
+            let player_transform = Transform.getMutable( resources["stage"].player );
+            let stage_root_transform  = Transform.getMutable( resources["stage"].root );
+
+
+            let yaw_rad = resources["index"].getEulerYawFromQuaternion2( Transform.get(engine.CameraEntity).rotation ) ;
+            let distance = 4;
+            let x_offset = distance * Math.sin( yaw_rad );
+            let z_offset = distance * Math.cos( yaw_rad ); 
+            
+            let target_position = Vector3.create(   
+                player_transform.position.x     + stage_root_transform.position.x - x_offset,
+                camera_box_transform.position.y  ,
+                player_transform.position.z     + stage_root_transform.position.z - z_offset ,
             );
             
-     
+        
+            // immediate
+            //camera_box_transform.position.x = target_position.x; 
+            //camera_box_transform.position.y = target_position.y; 
+            //camera_box_transform.position.z  = target_position.z; 
+            if ( Vector3.distanceSquared( 
+                camera_box_transform.position , 
+                target_position ) > 1
+            ) {
+                camera_box_transform.position = Vector3.lerp( 
+                    camera_box_transform.position,
+                    target_position,
+                    0.03
+                );
+            } else {
+                this.last_pos_adjusting = 0;
+            }
         }
+       
         
     }
     //------
@@ -697,18 +711,18 @@ class Index {
         
 
 
-        if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_DOWN)){
+        if (inputSystem.isTriggered(InputAction.IA_FORWARD, PointerEventType.PET_DOWN)  )  {
             resources["index"].W_on_press();
         }
         
-        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)){
+        if (inputSystem.isTriggered(InputAction.IA_LEFT, PointerEventType.PET_DOWN)  )  {
             resources["index"].A_on_press();
         }
-        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_DOWN)){   
+        if (inputSystem.isTriggered(InputAction.IA_BACKWARD, PointerEventType.PET_DOWN)  ) {   
             resources["index"].S_on_press();
         }
 
-        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_DOWN)){
+        if (inputSystem.isTriggered(InputAction.IA_RIGHT, PointerEventType.PET_DOWN)  ) {
             resources["index"].D_on_press();
             
         }
@@ -736,7 +750,12 @@ class Index {
 
         resources["index"].fix_player_position();
         resources["index"].fix_camerabox_position2();
-       
+        
+        if ( resources["index"].delayed_init_done == 0 ) {
+            resources["index"].delayed_init_done = 1;
+            resources["index"].delayed_init();
+
+        }
     }
     
 }
