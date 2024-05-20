@@ -35,8 +35,13 @@ export class UI2D {
         resources["ui"]["hint"] = {};
         resources["ui"]["hint"].visible = "none";
         resources["ui"]["hint"].text = "";
-        
 
+        resources["ui"]["status"] = {};
+        resources["ui"]["status"].text = "Lobby";
+        
+        resources["ui"]["gotolevel"] = {};
+        resources["ui"]["gotolevel"].visible = "none";
+        
         for ( let i = 0 ; i < 8 ; i++ ) {
             resources["ui"]["inventory"]["items"][i] = {}
             resources["ui"]["inventory"]["items"][i].visible = "none";
@@ -48,6 +53,7 @@ export class UI2D {
         resources["ui"]["notification"] = {};
         resources["ui"]["notification"].text = "";
         resources["ui"]["notification"].visible = "flex";
+        resources["ui"]["notification"].tick = 0;
 
         resources["ui"]["gamestatus"] = {};
         resources["ui"]["gamestatus"].chip_remaining = 0;
@@ -181,7 +187,7 @@ export class UI2D {
         return <UiEntity
         
             uiTransform={{
-                width: 900,
+                width: 1400,
                 height: 140,
                 positionType: 'absolute',
                 position: {
@@ -212,14 +218,7 @@ export class UI2D {
                     }
                 }}
                 uiText={{ 
-                    value: ( 
-                        ( resources["stage"].level_index > 0 )?  
-                            (
-                                ( resources["stage"].level_index < resources["stage"].levels.length  )? 
-                                  "Level: " +  resources["stage"].level_index        + " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining
-                                : "Level: " + (resources["stage"].level_index - resources["stage"].levels.length + 1  ) + " \t\tProcedural Sokoban Mode" 
-                            )
-                        : "Lobby" ) , 
+                    value: resources["ui"]["status"].text, 
                     fontSize: 40 ,
                     color: Color4.White()
             
@@ -277,6 +276,8 @@ Read hints to learn about\ndifferent puzzle elements\non different levels\n\
 Press [1] Restart current level\n\
 Press [2] Reset camera angle\n\
 Press [3] Back to lobby level\n\
+Press [4] Enter level password\n\
+\
 \n\
                     ", 
                     fontSize: 22 ,
@@ -337,6 +338,101 @@ Press [3] Back to lobby level\n\
     }
 
 
+
+    //----
+    static UI_goto_level() {
+        return <UiEntity
+            uiTransform={{
+                width: 800,
+                height: 400,
+                justifyContent: 'center',
+                display: resources["ui"]["gotolevel" ].visible 
+                
+            }}
+
+            uiBackground={{
+                textureMode: 'nine-slices',
+                texture: {
+                    src: 'images/panel2.png'
+                },
+                textureSlices: {
+                    top: 0.2,
+                    bottom: 0.2,
+                    left: 0.2,
+                    right: 0.2
+                },
+                color: Color4.fromInts(255,220,255,255)
+            }}
+        >
+
+                <UiEntity
+                    uiTransform={{
+                        width: 48,
+                        height: 48,
+                        positionType: 'absolute',
+                        position: {
+                            top: -24,
+                            right:-24
+                        },   
+                        
+                    }}
+
+                    uiBackground={{
+                        textureMode: 'stretch',
+                        texture: {
+                            src: 'images/closebutton3.png'
+                        }
+                    }}
+
+                    onMouseDown={() => {
+                        resources["stage"].on_gotolevel_closed();
+                    }}
+    
+                        
+                ></UiEntity>
+
+
+                <UiEntity
+                    uiTransform={{
+                        positionType: 'absolute',
+                        position: {
+                            top: 120
+                        },   
+                    }}
+                    uiText={{ 
+                        value: "Enter Level Password: ", 
+                        fontSize: 50 ,
+                        color: Color4.White()
+                
+                    }}
+                ></UiEntity>
+
+
+                <Input
+                    onSubmit={(value) => {
+                        resources["stage"].on_password_submit( value );
+                    }}
+                    fontSize={50}
+                    placeholder={''}
+                    placeholderColor={Color4.fromInts(255,255,255,120)}
+                    color={Color4.White()}
+                    uiTransform={{
+                        width: '400px',
+                        height: '80px',
+                        positionType: 'absolute',
+                        position: {
+                            top: 220
+                        },   
+                    }}
+                    ></Input>
+
+
+                
+                
+        </UiEntity>
+    }
+
+
     //------------
     UI_JSX() {
         return <UiEntity
@@ -356,6 +452,7 @@ Press [3] Back to lobby level\n\
             <UI2D.UI_gamestatus />
             <UI2D.UI_instructions />
             <UI2D.UI_hint />
+            <UI2D.UI_goto_level />
             <UI2D.UI_notificationComponent />
 
         </UiEntity>

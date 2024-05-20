@@ -63,6 +63,7 @@ import cclp3_86 from "./levels/cclp3_86";
 
 import sokoban_01 from "./levels/sokoban_01";
 import lobby from "./levels/lobby";
+import { Utils } from "./utils"
 
 import debug from "./levels/debug02"
 
@@ -180,8 +181,7 @@ export class Stage {
         this.root = root;
         this.create_player();
         this.load_level( this.levels[ this.level_index ].layers );
-
-
+        
         engine.addSystem( this.update );
         
 
@@ -306,7 +306,8 @@ export class Stage {
                 
                 resources["ui"]["gamestatus"].chip_remaining -= 1;
                 resources["index"].play_sound( "crystal" );
-                
+                this.render_level_status();
+
             }
         }
     }
@@ -2103,17 +2104,94 @@ export class Stage {
     //----
     back_to_lobby() {
 
-        this.clear_dynamic_objects();
-        this.clear_static_objects();
-        this.clear_inventory();
-        this.level_index = 0;
-        this.load_level( this.levels[ this.level_index ].layers );
-        this.restart_level();
+        if ( this.game_state == 0 ) {
+            this.clear_dynamic_objects();
+            this.clear_static_objects();
+            this.clear_inventory();
+            this.level_index = 0;
+            this.load_level( this.levels[ this.level_index ].layers );
+            this.restart_level();
+            this.render_level_status();
 
-        resources["ui"]["notification"].text = ""
-        this.game_state = 0;
+            resources["ui"]["notification"].text = "" 
+            this.game_state = 0;
+        }
     }
 
+
+    //------
+    get_level_password( level_index ) {
+        
+        let hash = Utils.sha256( level_index.toString() + "crystal" ) + ""
+        return hash.substring(0,4).toUpperCase() + level_index.toString().padStart(2,'0') ;
+         
+    }
+
+
+    //---
+    on_gotolevel_closed() {
+        
+        resources["ui"]["bgmask"].visible = "none";
+        resources["ui"]["gotolevel"].visible = "none";
+        this.game_state = 0;
+
+    }
+    
+
+    //---
+    on_password_submit( password ) {
+
+        if ( this.game_state == 4 ) {
+            
+            resources["ui"]["bgmask"].visible = "none";
+            resources["ui"]["gotolevel"].visible = "none";
+            
+            if ( password.length > 0 ) {
+
+                let p_level_index     = parseInt( password.substring(4) );
+                let p_level_password  = password.toUpperCase(); 
+
+                console.log( p_level_index , p_level_password ,  this.get_level_password( p_level_index ) );
+
+                if ( this.get_level_password( p_level_index ) == p_level_password ) { 
+                    
+                    this.level_index = p_level_index;
+                    
+                    resources["ui"]["notification"].text = "Please wait a while... Generating level..."
+                    
+                    this.clear_dynamic_objects();
+                    this.clear_static_objects();
+                    this.clear_inventory();
+                    
+                    this.game_state = 3;
+                    this.load_level( this.levels[ this.level_index ].layers );
+                    this.render_level_status();
+                    resources["ui"]["notification"].text = ""
+                    
+
+                } else { 
+                    resources["ui"]["notification"].text = "Invalid Password";
+                }
+            } else {
+                resources["ui"]["notification"].text = "Invalid Password";
+            }
+            this.game_state = 0;
+
+        }
+    }
+
+    //---
+    go_to_level() {
+        
+        if ( this.game_state == 0 ) {
+        
+            this.game_state = 4;
+            resources["ui"]["bgmask"].visible = "flex";
+            resources["ui"]["gotolevel"].visible = "flex";
+             
+        }
+
+    }
 
 
     //-----
@@ -2144,6 +2222,7 @@ export class Stage {
             } else {
                 this.load_level( this.generate_sokoban() );
             }
+            this.render_level_status();
 
             resources["ui"]["notification"].text = ""
             this.game_state = 0;
@@ -2403,6 +2482,10 @@ export class Stage {
         if ( this.game_state == 3 ) {
             return ;
         }
+        if ( this.game_state == 4 ) {
+            return ;
+        }
+
 
         this.game_state = 0;    
         resources["ui"]["bgmask"].visible = "none";
@@ -2465,6 +2548,8 @@ export class Stage {
         //player
         this.player_stats.length = 0;
         this.load_dynamic_objects( this.current_level_obj );
+
+        this.render_level_status();
     }
 
 
@@ -2480,7 +2565,6 @@ export class Stage {
     // this loads only the static.
     load_level( layers ) {
 
-        
         resources["ui"]["gamestatus"].chip_remaining = 0;
         this.current_level_obj = layers;
         
@@ -3397,7 +3481,24 @@ export class Stage {
         return x_diff * x_diff + z_diff * z_diff;
     }
 
+    //----
+    render_level_status() {
 
+        if ( resources["stage"].level_index > 0 ) {
+            if ( resources["stage"].level_index < resources["stage"].levels.length  ) {
+                resources["ui"]["status"].text = 
+                "Level: " +  resources["stage"].level_index + 
+                " \t\tCrystals Remaining: " + resources["ui"]["gamestatus"].chip_remaining +
+                " \t\tPassword: " + this.get_level_password( this.level_index )
+            } else {
+                resources["ui"]["status"].text = "Level: " + (resources["stage"].level_index - resources["stage"].levels.length + 1  ) + " \t\tProcedural Sokoban Mode" ;
+            }
+        } else {
+            resources["ui"]["status"].text = "Lobby";
+        }
+    }
+
+    
 
     //------------
 
@@ -3636,6 +3737,16 @@ export class Stage {
                     } 
                 }
             }
+
+            if ( resources["ui"]["notification"].text != "" ) {
+                resources["ui"]["notification"].tick += 1;
+                if ( resources["ui"]["notification"].tick > 50 ) {
+                    resources["ui"]["notification"].text = "";
+                    resources["ui"]["notification"].tick = 0;
+                }
+            }
+
+
         } else if ( _this.game_state == 3 ) {
             
             

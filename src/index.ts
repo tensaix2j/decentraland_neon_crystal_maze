@@ -42,7 +42,6 @@ class Index {
 
     public scene_parcels = Vector3.create(4,4,4);
     public camerabox;
-    public delayed_init_done = 0;
     
     
     //--------------
@@ -106,11 +105,7 @@ class Index {
 
 
 
-    //-----
-    delayed_init() {
-        resources["index"].fix_camerabox_position_instant();
-        resources["index"].resetCameraPosition();
-    }
+    
 
     //----
     async init_async() {
@@ -354,12 +349,7 @@ class Index {
             console.log("fix_player_position");
             this.resetCameraPosition();
         } 
-
-        // Also donot allow player to view other direction
-        if ( Transform.get(engine.CameraEntity).rotation.x < 0.3 ){
-            //this.resetCameraPosition();
-        }
-        //console.log( CameraRot )
+        
     }
 
 
@@ -411,7 +401,7 @@ class Index {
 
         if ( Vector3.distanceSquared( 
             camera_box_transform.position , 
-            target_position ) > 1
+            target_position ) > 3
         ) {
             camera_box_transform.position = Vector3.lerp( 
                 camera_box_transform.position,
@@ -710,7 +700,7 @@ class Index {
         // 4
         if (inputSystem.isTriggered(InputAction.IA_ACTION_6, PointerEventType.PET_DOWN)){
             
-            resources["stage"].debug();
+            resources["stage"].go_to_level();
             
         }
 
@@ -758,11 +748,7 @@ class Index {
         resources["index"].fix_player_position();
         resources["index"].fix_camerabox_position2();
         
-        if ( resources["index"].delayed_init_done == 0 ) {
-            resources["index"].delayed_init_done = 1;
-            resources["index"].delayed_init();
-
-        }
+        
     }
     
 }
