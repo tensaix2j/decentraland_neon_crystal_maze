@@ -253,11 +253,11 @@ class Index {
     //-----
     async register_visitors( ) {
         
-        let server_host = "https://labs.muadao.build/molecule_scene_api"; 
-		let url = server_host + "/insert_or_update_visitors";
+        let server_host = "https://myvercel-puce.vercel.app/api"; 
+		let url = server_host + "/insert_visitor";
         
         let body = {
-			address	     : resources["userData"].userId.toLowerCase(),
+			useraddr	 : resources["userData"].userId.toLowerCase(),
 			username     : resources["userData"].displayName,
             scene_id     : 1000,
             signature 	: Utils.sha256( resources["userData"].userId.toLowerCase() + resources["reqrealm"]  ),     
@@ -285,8 +285,11 @@ class Index {
     //---------------
 	async submit_highscore( score , game_id ) {
 	
-		let url = "https://labs.muadao.build/molecule_scene_api/insert_or_update_record";
 		
+        let server_host = "https://myvercel-puce.vercel.app/api"; 
+		let url = server_host + "/insert_highscore";
+
+        
 		let body = {
 			username	: resources["userData"].displayName,
 			useraddr	: resources["userData"].userId.toLowerCase(),
